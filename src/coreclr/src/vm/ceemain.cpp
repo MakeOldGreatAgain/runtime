@@ -871,7 +871,7 @@ void EEStartupHelper()
 #ifndef CROSSGEN_COMPILE
 
 #ifndef TARGET_UNIX
-        if (!RegisterOutOfProcessWatsonCallbacks())
+        if (!InitializeWatson())
         {
             IfFailGo(E_FAIL);
         }

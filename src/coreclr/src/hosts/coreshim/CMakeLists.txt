@@ -18,6 +18,7 @@ target_link_libraries(CoreShim
     oleaut32.lib
     uuid.lib
     user32.lib
+    version.lib
     ntdll.lib
     ${STATIC_MD_CRT_LIB}
 )

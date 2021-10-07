@@ -24,6 +24,10 @@
 
 #include <windows.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void WINAPI FlushProcessWriteBuffers();
 
 DWORD WINAPI GetCurrentProcessorNumber();
@@ -102,5 +106,69 @@ int WINAPI LCMapStringEx(
     LPVOID           lpReserved,
     LPARAM           sortHandle
 );
+
+#define STATUS_FAIL_FAST_EXCEPTION 0xC0000602
+
+#define RaiseFailFastException RaiseFailFastExceptionXP
+
+VOID
+WINAPI
+RaiseFailFastException(
+    _In_opt_ PEXCEPTION_RECORD pExceptionRecord,
+    _In_opt_ PCONTEXT pContextRecord,
+    _In_ DWORD dwFlags
+);
+
+#define GetFileVersionInfoExW GetFileVersionInfoExWXP
+
+BOOL WINAPI GetFileVersionInfoExW(
+    DWORD   dwFlags,
+    LPCWSTR lpwstrFilename,
+    DWORD   dwHandle,
+    DWORD   dwLen,
+    LPVOID  lpData
+);
+
+#define GetFileVersionInfoSizeExW GetFileVersionInfoSizeExWXP
+
+DWORD WINAPI GetFileVersionInfoSizeExW(
+    DWORD   dwFlags,
+    LPCWSTR lpwstrFilename,
+    LPDWORD lpdwHandle
+);
+
+#define CancelIoEx CancelIoExXP
+
+BOOL
+WINAPI
+CancelIoEx(
+    _In_ HANDLE hFile,
+    _In_opt_ LPOVERLAPPED lpOverlapped
+);
+
+#define CopyContext CopyContextXP
+
+BOOL
+WINAPI
+CopyContext(
+    _Inout_ PCONTEXT Destination,
+    _In_ DWORD ContextFlags,
+    _In_ PCONTEXT Source
+);
+
+#define InitializeContext InitializeContextXP
+
+BOOL
+WINAPI
+InitializeContext(
+    _Out_writes_bytes_opt_(*ContextLength) PVOID Buffer,
+    _In_ DWORD ContextFlags,
+    _Out_ PCONTEXT* Context,
+    _Inout_ PDWORD ContextLength
+);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // __WINXP_WRAP_H__

@@ -19,7 +19,7 @@
 RunningOnStatusEnum gRunningOnStatus = RUNNING_ON_STATUS_UNINITED;
 
 #define NON_SUPPORTED_PLATFORM_MSGBOX_TITLE             W("Platform not supported")
-#define NON_SUPPORTED_PLATFORM_MSGBOX_TEXT              W("The minimum supported platform is Windows 7")
+#define NON_SUPPORTED_PLATFORM_MSGBOX_TEXT              W("The minimum supported platform is Windows XP")
 #define NON_SUPPORTED_PLATFORM_TERMINATE_ERROR_CODE     0xBAD1BAD1
 
 //*****************************************************************************
@@ -60,7 +60,7 @@ void InitRunningOnVersionStatus ()
     ZeroMemory(&sVer, sizeof(OSVERSIONINFOEX));
     sVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    sVer.dwMajorVersion = 6;
+    sVer.dwMajorVersion = 5;
     sVer.dwMinorVersion = 1;
     sVer.dwPlatformId = VER_PLATFORM_WIN32_NT;
 
@@ -72,7 +72,7 @@ void InitRunningOnVersionStatus ()
 
     if(VerifyVersionInfo(&sVer, VER_MAJORVERSION | VER_PLATFORMID | VER_MINORVERSION, dwlConditionMask))
     {
-        gRunningOnStatus = RUNNING_ON_WIN7;
+        gRunningOnStatus = RUNNING_ON_WINXP;
         fSupportedPlatform = TRUE;
         goto CHECK_SUPPORTED;
     }

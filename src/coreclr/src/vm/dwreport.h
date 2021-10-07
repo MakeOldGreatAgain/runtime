@@ -52,6 +52,7 @@ FaultReportResult DoFaultReport(            // Was Watson attempted, successful?
     TypeOfReportedError tore);              // What sort of error is reported.
 
 BOOL IsWatsonEnabled();
+BOOL InitializeWatson();
 BOOL RegisterOutOfProcessWatsonCallbacks();
 
 int DwGetAssemblyVersion(               // Number of characters written.

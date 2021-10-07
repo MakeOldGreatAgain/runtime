@@ -27,3 +27,29 @@ EXPORTS
 
         ; Used by profilers
         MetaDataGetDispenser
+
+        ; XP Wrappers
+        FlushProcessWriteBuffers
+        GetCurrentProcessorNumber
+        GetCurrentProcessorNumberEx
+        GetActiveProcessorCount
+        GetThreadIdealProcessorEx
+        SetThreadIdealProcessorEx
+        GetThreadId
+        GetThreadGroupAffinity
+        SetThreadGroupAffinity
+        GetTickCount64
+        QueryThreadCycleTime
+        VirtualAllocExNuma
+        GetNumaProcessorNodeEx
+        GetNumaNodeProcessorMaskEx
+        LCIDToLocaleName
+        LocaleNameToLCID
+        GetLocaleInfoEx
+        LCMapStringEx
+        RaiseFailFastException=RaiseFailFastExceptionXP
+        GetFileVersionInfoExW=GetFileVersionInfoExWXP
+        GetFileVersionInfoSizeExW=GetFileVersionInfoSizeExWXP
+        CancelIoEx=CancelIoExXP
+        CopyContext=CopyContextXP
+        InitializeContext=InitializeContextXP

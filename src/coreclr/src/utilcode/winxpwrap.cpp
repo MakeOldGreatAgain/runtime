@@ -1367,3 +1367,86 @@ int WINAPI LCMapStringEx(
 
     return LCMapStringW(Locale, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest);
 }
+
+VOID
+WINAPI
+RaiseFailFastException(
+    _In_opt_ PEXCEPTION_RECORD pExceptionRecord,
+    _In_opt_ PCONTEXT pContextRecord,
+    _In_ DWORD dwFlags
+)
+{
+    TerminateProcess(GetCurrentProcess(), pExceptionRecord ? pExceptionRecord->ExceptionCode : STATUS_FAIL_FAST_EXCEPTION);
+}
+
+BOOL WINAPI GetFileVersionInfoExW(
+    DWORD   dwFlags,
+    LPCWSTR lpwstrFilename,
+    DWORD   dwHandle,
+    DWORD   dwLen,
+    LPVOID  lpData
+)
+{
+    return GetFileVersionInfoW(lpwstrFilename, dwHandle, dwLen, lpData);
+}
+
+DWORD WINAPI GetFileVersionInfoSizeExW(
+    DWORD   dwFlags,
+    LPCWSTR lpwstrFilename,
+    LPDWORD lpdwHandle
+)
+{
+    return GetFileVersionInfoSizeW(lpwstrFilename, lpdwHandle);
+}
+
+BOOL
+WINAPI
+CancelIoEx(
+    _In_ HANDLE hFile,
+    _In_opt_ LPOVERLAPPED lpOverlapped
+)
+{
+    return CancelIo(hFile);
+}
+
+BOOL
+WINAPI
+CopyContext(
+    _Inout_ PCONTEXT Destination,
+    _In_ DWORD ContextFlags,
+    _In_ PCONTEXT Source
+)
+{
+    CopyMemory(Destination, Source, sizeof(CONTEXT));
+    return TRUE;
+}
+
+BOOL
+WINAPI
+InitializeContext(
+    _Out_writes_bytes_opt_(*ContextLength) PVOID Buffer,
+    _In_ DWORD ContextFlags,
+    _Out_ PCONTEXT* Context,
+    _Inout_ PDWORD ContextLength
+)
+{
+    if (!Buffer)
+    {
+        *ContextLength = sizeof(CONTEXT);
+        SetLastError(ERROR_INSUFFICIENT_BUFFER);
+        return FALSE;
+    }
+    else
+    {
+        if (*ContextLength < sizeof(CONTEXT))
+        {
+            SetLastError(ERROR_INSUFFICIENT_BUFFER);
+            return FALSE;
+        }
+
+        ZeroMemory(Buffer, sizeof(CONTEXT));
+        *Context = (CONTEXT*)Buffer;
+        (*Context)->ContextFlags = ContextFlags;
+        return TRUE;
+    }
+}

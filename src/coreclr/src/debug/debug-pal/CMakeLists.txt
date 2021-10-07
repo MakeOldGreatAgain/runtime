@@ -5,7 +5,13 @@ include_directories(../../pal/inc)
 add_definitions(-DPAL_STDCPP_COMPAT)
 
 if(CLR_CMAKE_HOST_WIN32)
+    add_definitions(-DUNICODE)
+    add_definitions(-DWIN32)
+    add_definitions(-D_WIN32)
+    add_definitions(-DWINVER=0x0501)
+    add_definitions(-D_WIN32_WINNT=0x0501)
     add_definitions(-DWIN32_LEAN_AND_MEAN)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     include_directories(../../inc) #needed for warning control
 
     if(CLR_CMAKE_TARGET_WIN32)

@@ -2164,9 +2164,6 @@ void ThreadSuspend::UnlockThreadStore(BOOL bThreadDestroyed, ThreadSuspend::SUSP
 #endif
 }
 
-typedef BOOL(WINAPI* PINITIALIZECONTEXT2)(PVOID Buffer, DWORD ContextFlags, PCONTEXT* Context, PDWORD ContextLength, ULONG64 XStateCompactionMask);
-PINITIALIZECONTEXT2 pfnInitializeContext2 = NULL;
-
 #ifdef TARGET_X86
 #define CONTEXT_COMPLETE (CONTEXT_FULL | CONTEXT_FLOATING_POINT |       \
                           CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS | CONTEXT_EXCEPTION_REQUEST)
@@ -2180,30 +2177,22 @@ CONTEXT* AllocateOSContextHelper(BYTE** contextBuffer)
 
 #if !defined(TARGET_UNIX) && (defined(TARGET_X86) || defined(TARGET_AMD64))
     DWORD context = CONTEXT_COMPLETE;
-    BOOL supportsAVX = FALSE;
-
-    if (pfnInitializeContext2 == NULL)
-    {
-        HMODULE hm = GetModuleHandleW(_T("kernel32.dll"));
-        pfnInitializeContext2 = (PINITIALIZECONTEXT2)GetProcAddress(hm, "InitializeContext2");
-    }
+    //BOOL supportsAVX = FALSE;
 
     // Determine if the processor supports AVX so we could 
     // retrieve extended registers
-    DWORD64 FeatureMask = GetEnabledXStateFeatures();
-    if ((FeatureMask & XSTATE_MASK_AVX) != 0)
-    {
-        context = context | CONTEXT_XSTATE;
-        supportsAVX = TRUE;
-    }
+    //DWORD64 FeatureMask = GetEnabledXStateFeatures();
+    //if ((FeatureMask & XSTATE_MASK_AVX) != 0)
+    //{
+    //    context = context | CONTEXT_XSTATE;
+    //    supportsAVX = TRUE;
+    //}
 
     // Retrieve contextSize by passing NULL for Buffer
     DWORD contextSize = 0;
     ULONG64 xStateCompactionMask = XSTATE_MASK_LEGACY | XSTATE_MASK_AVX;
     // The initialize call should fail but return contextSize
-    BOOL success = pfnInitializeContext2 ?
-        pfnInitializeContext2(NULL, context, NULL, &contextSize, xStateCompactionMask) :
-        InitializeContext(NULL, context, NULL, &contextSize);
+    BOOL success = InitializeContext(NULL, context, NULL, &contextSize);
 
     _ASSERTE(!success && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
 
@@ -2211,18 +2200,16 @@ CONTEXT* AllocateOSContextHelper(BYTE** contextBuffer)
     BYTE* buffer = new (nothrow)BYTE[contextSize];
     if (buffer != NULL)
     {
-        success = pfnInitializeContext2 ?
-            pfnInitializeContext2(buffer, context, &pOSContext, &contextSize, xStateCompactionMask) :
-            InitializeContext(buffer, context, &pOSContext, &contextSize);
+        success = InitializeContext(buffer, context, &pOSContext, &contextSize);
 
         // if AVX is supported set the appropriate features mask in the context
-        if (success && supportsAVX)
-        {
-            // This should not normally fail.
-            // The system silently ignores any feature specified in the FeatureMask
-            // which is not enabled on the processor.
-            success = SetXStateFeaturesMask(pOSContext, XSTATE_MASK_AVX);
-        }
+        //if (success && supportsAVX)
+        //{
+        //    // This should not normally fail.
+        //    // The system silently ignores any feature specified in the FeatureMask
+        //    // which is not enabled on the processor.
+        //    success = SetXStateFeaturesMask(pOSContext, XSTATE_MASK_AVX);
+        //}
 
         if (!success)
         {

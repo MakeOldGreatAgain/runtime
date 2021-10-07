@@ -23,7 +23,7 @@
 //*****************************************************************************
 typedef enum {
     RUNNING_ON_STATUS_UNINITED = 0,
-    RUNNING_ON_WIN7            = 1,
+    RUNNING_ON_WINXP           = 1,
     RUNNING_ON_WIN8            = 2
 } RunningOnStatusEnum;
 

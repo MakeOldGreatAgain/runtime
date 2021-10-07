@@ -78,7 +78,6 @@ set(ILDASM_LINK_LIBRARIES
 if(CLR_CMAKE_HOST_WIN32)
     list(APPEND ILDASM_LINK_LIBRARIES
         ${STATIC_MD_CRT_LIB}
-        kernel32.lib
         advapi32.lib
         ole32.lib
         oleaut32.lib

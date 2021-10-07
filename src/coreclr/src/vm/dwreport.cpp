@@ -32,6 +32,10 @@ EFaultRepRetVal DoReportFault(EXCEPTION_POINTERS * pExceptionInfo);
 // Variables to control launching Watson only once, but making all threads wait for that single launch to finish.
 LONG g_watsonAlreadyLaunched = 0; // Used to note that another thread has done Watson.
 
+#if !defined(FEATURE_UEF_CHAINMANAGER)
+HandleHolder g_hWatsonCompletionEvent = NULL; // Used to signal that Watson has finished.
+#endif // FEATURE_UEF_CHAINMANAGER
+
 typedef HMODULE (*AcquireLibraryHandleFn)(LPCWSTR);
 
 template <AcquireLibraryHandleFn AcquireLibraryHandleFnPtr, bool RequiresFree>
@@ -81,6 +85,39 @@ BOOL IsWatsonEnabled()
     LIMITED_METHOD_CONTRACT;
     return TRUE;
 }
+
+//------------------------------------------------------------------------------
+// Description
+//  Initializes watson global critsec and event.  Records whether run via
+//   managed .exe.
+//
+// Parameters
+//  fFlags -- the COINITIEE flags used to start the runtime.
+//
+// Returns
+//  TRUE -- always
+//------------------------------------------------------------------------------
+BOOL InitializeWatson()
+{
+    LIMITED_METHOD_CONTRACT;
+
+    LOG((LF_EH, LL_INFO10, "InitializeWatson: enabled\n", IsWatsonEnabled() ? "enabled" : "disabled"));
+
+    if (!IsWatsonEnabled())
+    {
+        return TRUE;
+    }
+
+#if defined(FEATURE_UEF_CHAINMANAGER)
+    return TRUE;
+#else
+    // Create the event that all-but-the-first threads will wait on (the first thread
+    // will set the event when Watson is done.)
+    g_hWatsonCompletionEvent = WszCreateEvent(NULL, TRUE /*manual reset*/, FALSE /*initial state*/, NULL);
+    return (g_hWatsonCompletionEvent != NULL);
+#endif // FEATURE_UEF_CHAINMANAGER
+
+} // BOOL InitializeWatson()
 
 //------------------------------------------------------------------------------
 // Description

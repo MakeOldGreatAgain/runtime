@@ -160,6 +160,7 @@ if(CLR_CMAKE_HOST_WIN32)
         oleaut32.lib
         uuid.lib
         user32.lib
+        version.lib
         ntdll.lib
         ${STATIC_MD_CRT_LIB}
     )

@@ -50,6 +50,7 @@ if(CLR_CMAKE_TARGET_WIN32)
     Psapi.lib
     oleaut32.lib
     user32.lib
+    version.lib
     ntdll.lib
     )
 endif(CLR_CMAKE_TARGET_WIN32)

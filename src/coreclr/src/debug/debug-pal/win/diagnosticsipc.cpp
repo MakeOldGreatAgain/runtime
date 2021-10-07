@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "diagnosticsipc.h"
+#include <winxpwrap.h>
 
 #define _ASSERTE assert
 
@@ -14,6 +15,7 @@ IpcStream::DiagnosticsIpc::DiagnosticsIpc(const char(&namedPipeName)[MaxNamedPip
 {
     memcpy(_pNamedPipeName, namedPipeName, sizeof(_pNamedPipeName));
     memset(&_oOverlap, 0, sizeof(OVERLAPPED));
+    _oOverlap.hEvent = INVALID_HANDLE_VALUE;
 }
 
 IpcStream::DiagnosticsIpc::~DiagnosticsIpc()
@@ -118,8 +120,8 @@ bool IpcStream::DiagnosticsIpc::Listen(ErrorCallback callback)
                 ::CloseHandle(_hPipe);
                 _hPipe = INVALID_HANDLE_VALUE;
                 ::CloseHandle(_oOverlap.hEvent);
-                _oOverlap.hEvent = INVALID_HANDLE_VALUE;
                 memset(&_oOverlap, 0, sizeof(OVERLAPPED)); // clear the overlapped objects state
+                _oOverlap.hEvent = INVALID_HANDLE_VALUE;
                 return false;
         }
     }
@@ -159,6 +161,7 @@ IpcStream *IpcStream::DiagnosticsIpc::Accept(ErrorCallback callback)
     _isListening = false;
     ::CloseHandle(_oOverlap.hEvent);
     memset(&_oOverlap, 0, sizeof(OVERLAPPED)); // clear the overlapped objects state
+    _oOverlap.hEvent = INVALID_HANDLE_VALUE;
     fSuccess = Listen(callback);
     if (!fSuccess)
     {
