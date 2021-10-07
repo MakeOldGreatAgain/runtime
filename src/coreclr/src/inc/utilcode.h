@@ -523,8 +523,8 @@ inline HRESULT OutOfMemory()
 //*****************************************************************************
 // Handle accessing localizable resource strings
 //*****************************************************************************
-typedef LPCWSTR LocaleID;
-typedef WCHAR LocaleIDValue[LOCALE_NAME_MAX_LENGTH];
+typedef LCID LocaleID;
+typedef LCID LocaleIDValue;
 
 // Notes about the culture callbacks:
 // - The language we're operating in can change at *runtime*!
@@ -540,7 +540,7 @@ typedef WCHAR LocaleIDValue[LOCALE_NAME_MAX_LENGTH];
 
 // Callback to obtain both the culture name and the culture's parent culture name
 typedef HRESULT (*FPGETTHREADUICULTURENAMES)(__inout StringArrayList* pCultureNames);
-const LPCWSTR UICULTUREID_DONTCARE = NULL;
+const LCID UICULTUREID_DONTCARE = (LCID)-1;
 
 typedef int (*FPGETTHREADUICULTUREID)(LocaleIDValue*);
 
@@ -610,7 +610,7 @@ public:
         if (id == UICULTUREID_DONTCARE)
             return FALSE;
 
-        return wcscmp(id, m_LangId) == 0;
+        return id == m_LangId;
     }
 
     HRESOURCEDLL GetLibraryHandle()
@@ -645,15 +645,7 @@ public:
   private:
     void SetId(LocaleID id)
     {
-        if (id != UICULTUREID_DONTCARE)
-        {
-            wcsncpy_s(m_LangId, NumItems(m_LangId), id, NumItems(m_LangId));
-            m_LangId[NumItems(m_LangId)-1] = W('\0');
-        }
-        else
-        {
-            m_LangId[0] = W('\0');
-        }
+        m_LangId = id;
     }
  };
 
@@ -1296,8 +1288,8 @@ public:
 
 #if !defined(FEATURE_REDHAWK)
 public:
-    static BOOL GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP relationship,
-		   SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *slpiex, PDWORD count);
+    //static BOOL GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP relationship,
+	//	   SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *slpiex, PDWORD count);
     static BOOL SetThreadGroupAffinity(HANDLE h,
 		    const GROUP_AFFINITY *groupAffinity, GROUP_AFFINITY *previousGroupAffinity);
     static BOOL GetThreadGroupAffinity(HANDLE h, GROUP_AFFINITY *groupAffinity);

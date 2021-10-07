@@ -83,8 +83,8 @@ if(CLR_CMAKE_HOST_WIN32)
         uuid.lib
         user32.lib
         version.lib
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
+        ntdll.lib
+        ${STATIC_MD_CRT_LIB}
     )
 
     target_link_libraries(mscordbi ${COREDBI_LIBRARIES})

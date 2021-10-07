@@ -88,7 +88,7 @@ enum EtwThreadFlags
 // if the fields in the event are not cheap to calculate
 //
 #define ETW_EVENT_ENABLED(Context, EventDescriptor) \
-    ((Context.EtwProvider->IsEnabled && McGenEventXplatEnabled(Context.EtwProvider, &EventDescriptor)) || EventPipeHelper::IsEnabled(Context, EventDescriptor.Level, EventDescriptor.Keyword))
+    ((Context.EtwProvider->IsEnabled && McGenEventTracingEnabled(Context.EtwProvider, &EventDescriptor)) || EventPipeHelper::IsEnabled(Context, EventDescriptor.Level, EventDescriptor.Keyword))
 
 //
 // Use this macro to check if a category of events is enabled
@@ -631,6 +631,7 @@ extern "C" {
 #endif //!DONOT_DEFINE_ETW_CALLBACK && !DACCESS_COMPILE
 
 #endif //!HOST_UNIX
+#define McGenInitTracingSupportFunc
 #include "clretwallmain.h"
 
 #if defined(FEATURE_PERFTRACING)
@@ -1298,49 +1299,28 @@ EXTERN_C DOTNET_TRACE_CONTEXT MICROSOFT_WINDOWS_DOTNETRUNTIME_PRIVATE_PROVIDER_D
 EXTERN_C DOTNET_TRACE_CONTEXT MICROSOFT_WINDOWS_DOTNETRUNTIME_RUNDOWN_PROVIDER_DOTNET_Context;
 EXTERN_C DOTNET_TRACE_CONTEXT MICROSOFT_WINDOWS_DOTNETRUNTIME_STRESS_PROVIDER_DOTNET_Context;
 
+inline void McGenInitTracingSupport()
+/*++
+
+Routine Description:
+
+    This function assigns at runtime the ETW API set to be use for tracing.
+
+Arguments:
+
+Remarks:
+
+    At runtime assign the function pointers for the trace APIs to be used.
+    Vista and later uses WriteEvent, otherwise use TraceEvent.
+
+--*/
+{
+    McGenDebug(1, ("[McGenInitTracing] Prevista %s \n", McGenPreVista ? "TRUE" : "FALSE"));
+}
+
 //
 // Special Handling of Startup events
 //
-
-// "mc.exe -MOF" already generates this block for XP-suported builds inside ClrEtwAll.h;
-// on Vista+ builds, mc is run without -MOF, and we still have code that depends on it, so
-// we manually place it here.
-ETW_INLINE
-ULONG
-CoMofTemplate_h(
-    __in REGHANDLE RegHandle,
-    __in PCEVENT_DESCRIPTOR Descriptor,
-    __in_opt LPCGUID EventGuid,
-    __in const unsigned short  ClrInstanceID
-    )
-{
-#define ARGUMENT_COUNT_h 1
-    ULONG Error = ERROR_SUCCESS;
-typedef struct _MCGEN_TRACE_BUFFER {
-    EVENT_TRACE_HEADER Header;
-    EVENT_DATA_DESCRIPTOR EventData[ARGUMENT_COUNT_h];
-} MCGEN_TRACE_BUFFER;
-
-    MCGEN_TRACE_BUFFER TraceBuf;
-    PEVENT_DATA_DESCRIPTOR EventData = TraceBuf.EventData;
-
-    EventDataDescCreate(&EventData[0], &ClrInstanceID, sizeof(const unsigned short)  );
-
-
-  {
-    Error = EventWrite(RegHandle, Descriptor, ARGUMENT_COUNT_h, EventData);
-
-  }
-
-#ifdef MCGEN_CALLOUT
-MCGEN_CALLOUT(RegHandle,
-              Descriptor,
-              ARGUMENT_COUNT_h,
-              EventData);
-#endif
-
-    return Error;
-}
 
 class ETWTraceStartup {
     REGHANDLE TraceHandle;
@@ -1364,50 +1344,10 @@ public:
         EVENT_DESCRIPTOR desc = *_EventDescriptor;
         if(ETW_TRACING_ENABLED(MICROSOFT_WINDOWS_DOTNETRUNTIME_PRIVATE_PROVIDER_DOTNET_Context, desc))
         {
-            CoMofTemplate_h(MICROSOFT_WINDOWS_DOTNETRUNTIME_PRIVATE_PROVIDER_Context.RegistrationHandle, _EventDescriptor, _EventGuid, GetClrInstanceId());
+            McTemplateCoMofU0h(&MICROSOFT_WINDOWS_DOTNETRUNTIME_PRIVATE_PROVIDER_Context, _EventDescriptor, _EventGuid, GetClrInstanceId());
         }
     }
 };
-// "mc.exe -MOF" already generates this block for XP-suported builds inside ClrEtwAll.h;
-// on Vista+ builds, mc is run without -MOF, and we still have code that depends on it, so
-// we manually place it here.
-FORCEINLINE
-BOOLEAN __stdcall
-McGenEventTracingEnabled(
-    __in PMCGEN_TRACE_CONTEXT EnableInfo,
-    __in PCEVENT_DESCRIPTOR EventDescriptor
-    )
-{
-
-    if(!EnableInfo){
-        return FALSE;
-    }
-
-
-    //
-    // Check if the event Level is lower than the level at which
-    // the channel is enabled.
-    // If the event Level is 0 or the channel is enabled at level 0,
-    // all levels are enabled.
-    //
-
-    if ((EventDescriptor->Level <= EnableInfo->Level) || // This also covers the case of Level == 0.
-        (EnableInfo->Level == 0)) {
-
-        //
-        // Check if Keyword is enabled
-        //
-
-        if ((EventDescriptor->Keyword == (ULONGLONG)0) ||
-            ((EventDescriptor->Keyword & EnableInfo->MatchAnyKeyword) &&
-             ((EventDescriptor->Keyword & EnableInfo->MatchAllKeyword) == EnableInfo->MatchAllKeyword))) {
-            return TRUE;
-        }
-    }
-
-    return FALSE;
-}
-
 
 ETW_INLINE
 ULONG
@@ -1423,7 +1363,6 @@ typedef struct _MCGEN_TRACE_BUFFER {
     EVENT_DATA_DESCRIPTOR EventData[ARGUMENT_COUNT_CLRStackWalk];
 } MCGEN_TRACE_BUFFER;
 
-    REGHANDLE RegHandle = TraceContext.RegistrationHandle;
     if(!TraceContext.IsEnabled || !McGenEventTracingEnabled(&TraceContext, Descriptor))
     {
         return Result;
@@ -1449,7 +1388,14 @@ typedef struct _MCGEN_TRACE_BUFFER {
 
         EventDataDescCreate(&EventData[4], Stack, sizeof(PVOID) * FrameCount );
 
-        return EventWrite(RegHandle, Descriptor, ARGUMENT_COUNT_CLRStackWalk, EventData);
+        TraceBuf.Header.GuidPtr = (ULONGLONG)EventGuid;
+        TraceBuf.Header.Flags = WNODE_FLAG_TRACED_GUID | WNODE_FLAG_USE_GUID_PTR | WNODE_FLAG_USE_MOF_PTR;
+        TraceBuf.Header.Class.Version = (USHORT)Descriptor->Version;
+        TraceBuf.Header.Class.Level = Descriptor->Level;
+        TraceBuf.Header.Class.Type = Descriptor->Opcode;
+        TraceBuf.Header.Size = sizeof(MCGEN_TRACE_BUFFER);
+
+        return TraceEvent(TraceContext.Logger, &TraceBuf.Header);
     }
     return Result;
 };

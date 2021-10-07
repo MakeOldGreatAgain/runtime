@@ -1185,55 +1185,6 @@
                         </UserData>
                     </template>
 
-                    <template tid="GCPerHeapHistory_V3">
-                        <data name="ClrInstanceID" inType="win:UInt16" />
-     					<data name="FreeListAllocated" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="FreeListRejected" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="EndOfSegAllocated" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="CondemnedAllocated" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="PinnedAllocated" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="PinnedAllocatedAdvance" inType="win:Pointer" outType="win:HexInt64" />
-     					<data name="RunningFreeListEfficiency" inType="win:UInt32" />
-     					<data name="CondemnReasons0" inType="win:UInt32" />
-     					<data name="CondemnReasons1" inType="win:UInt32" />
-     					<data name="CompactMechanisms" inType="win:UInt32" />
-     					<data name="ExpandMechanisms" inType="win:UInt32" />
-     					<data name="HeapIndex" inType="win:UInt32" />
-     					<data name="ExtraGen0Commit" inType="win:Pointer" outType="win:HexInt64" />
-                        <data name="Count" inType="win:UInt32"    />
-                        <struct name="Values"   count="Count"  >
-							<data name="SizeBefore" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="FreeListBefore" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="FreeObjBefore" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="SizeAfter" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="FreeListAfter" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="FreeObjAfter" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="In" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="PinnedSurv" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="NonePinnedSurv" inType="win:Pointer" outType="win:HexInt64" />
-							<data name="NewAllocation" inType="win:Pointer" outType="win:HexInt64" />
-                        </struct>
-                        <UserData>
-                            <GCPerHeapHistory_V3 xmlns="myNs">
-                                <ClrInstanceID> %1 </ClrInstanceID>
-                                <FreeListAllocated> %2 </FreeListAllocated>
-                                <FreeListRejected> %3 </FreeListRejected>
-                                <EndOfSegAllocated> %4 </EndOfSegAllocated>
-                                <CondemnedAllocated> %5 </CondemnedAllocated>
-                                <PinnedAllocated> %6 </PinnedAllocated>
-                                <PinnedAllocatedAdvance> %7 </PinnedAllocatedAdvance>
-                                <RunningFreeListEfficiency> %8 </RunningFreeListEfficiency>
-                                <CondemnReasons0> %9 </CondemnReasons0>
-                                <CondemnReasons1> %10 </CondemnReasons1>
-                                <CompactMechanisms> %11 </CompactMechanisms>
-                                <ExpandMechanisms> %12 </ExpandMechanisms>
-                                <HeapIndex> %13 </HeapIndex>
-                                <ExtraGen0Commit> %14 </ExtraGen0Commit>
-                                <Count> %15 </Count>
-                            </GCPerHeapHistory_V3>
-                        </UserData>
-                    </template>
-
                     <template tid="GCGlobalHeap_V2">
                         <data name="FinalYoungestDesired" inType="win:UInt64" outType="win:HexInt64" />
                         <data name="NumHeaps" inType="win:Int32" />
@@ -1350,13 +1301,6 @@
                         <data name="ObjectID" inType="win:Pointer" />
                         <data name="ObjectSize" inType="win:UInt64" />
                         <data name="TypeName" inType="win:UnicodeString" />
-                        <data name="ClrInstanceID" inType="win:UInt16" />
-                    </template>
-
-                    <template tid="GCDynamicEvent">
-                        <data name="Name" inType="win:UnicodeString" />
-                        <data name="DataSize" inType="win:UInt32" />
-                        <data name="Data" inType="win:Binary" length="DataSize" />
                         <data name="ClrInstanceID" inType="win:UInt16" />
                     </template>
 
@@ -1899,24 +1843,6 @@
                         </UserData>
                     </template>
 
-                    <template tid="MethodDetails">
-                        <data name="MethodID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="MethodToken" inType="win:UInt32" outType="win:HexInt32" />
-                        <data name="TypeParameterCount" inType="win:UInt32" />
-                        <data name="LoaderModuleID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeParameters" count="TypeParameterCount"  inType="win:UInt64" outType="win:HexInt64" />
-                        <UserData>
-                            <MethodDetails xmlns="myNs">
-                                <MethodID> %1 </MethodID>
-                                <TypeID> %2 </TypeID>
-                                <MethodToken> %3 </MethodToken>
-                                <TypeParameterCount> %4 </TypeParameterCount>
-                                <LoaderModuleID> %5 </LoaderModuleID>
-                            </MethodDetails>
-                        </UserData>
-                    </template>
-
                     <template tid="TypeLoadStart">
                         <data name="TypeLoadStartID" inType="win:UInt32" />
                         <data name="ClrInstanceID" inType="win:UInt16" />
@@ -2356,25 +2282,6 @@
                         </UserData>
                     </template>
 
-                    <template tid="MethodILToNativeMap">
-                      <data name="MethodID" inType="win:UInt64" outType="win:HexInt64" />
-                      <data name="ReJITID" inType="win:UInt64" outType="win:HexInt64" />
-                      <data name="MethodExtent" inType="win:UInt8" />
-                      <data name="CountOfMapEntries" inType="win:UInt16" />
-                      <data name="ILOffsets" count="CountOfMapEntries" inType="win:UInt32" />
-                      <data name="NativeOffsets" count="CountOfMapEntries" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <UserData>
-                        <MethodILToNativeMap xmlns="myNs">
-                          <MethodID> %1 </MethodID>
-                          <ReJITID> %2 </ReJITID>
-                          <MethodExtent> %3 </MethodExtent>
-                          <CountOfMapEntries> %4 </CountOfMapEntries>
-                          <ClrInstanceID> %5 </ClrInstanceID>
-                        </MethodILToNativeMap>
-                      </UserData>
-                    </template>
-
                     <template tid="ClrStackWalk">
                         <data name="ClrInstanceID" inType="win:UInt16" />
                         <data name="Reserved1" inType="win:UInt8" />
@@ -2514,158 +2421,6 @@
                         </UserData>
                     </template>
 
-                    <template tid="BulkType">
-                      <data name="Count" inType="win:UInt32"    />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values" count="Count" >
-                        <data name="TypeID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="ModuleID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeNameID" inType="win:UInt32" />
-                        <data name="Flags" inType="win:UInt32" map="TypeFlagsMap"/>
-                        <data name="CorElementType"  inType="win:UInt8" />
-                        <data name="Name" inType="win:UnicodeString" />
-                        <data name="TypeParameterCount" inType="win:UInt32" />
-                        <data name="TypeParameters"  count="TypeParameterCount"  inType="win:UInt64" outType="win:HexInt64" />
-                      </struct>
-                      <UserData>
-                        <Type xmlns="myNs">
-                          <Count> %1 </Count>
-                          <ClrInstanceID> %2 </ClrInstanceID>
-                        </Type>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkRootEdge">
-                      <data name="Index" inType="win:UInt32"    />
-                      <data name="Count" inType="win:UInt32"    />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values"   count="Count"  >
-                        <data name="RootedNodeAddress" inType="win:Pointer" />
-                        <data name="GCRootKind" inType="win:UInt8"    map="GCRootKindMap" />
-                        <data name="GCRootFlag" inType="win:UInt32"   map="GCRootFlagsMap" />
-                        <data name="GCRootID" inType="win:Pointer" />
-                      </struct>
-                      <UserData>
-                        <GCBulkRootEdge xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkRootEdge>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkRootCCW">
-                      <data name="Count" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values" count="Count" >
-                        <data name="GCRootID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="ObjectID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeID"   inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="IUnknown" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="RefCount" inType="win:UInt32"/>
-                        <data name="PeggedRefCount" inType="win:UInt32"/>
-                        <data name="Flags" inType="win:UInt32" map="GCRootCCWFlagsMap"/>
-                      </struct>
-                      <UserData>
-                        <Type xmlns="myNs">
-                          <Count> %1 </Count>
-                          <ClrInstanceID> %2 </ClrInstanceID>
-                        </Type>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkRCW">
-                      <data name="Count" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values" count="Count" >
-                        <data name="ObjectID" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeID"   inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="IUnknown" inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="VTable"   inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="RefCount" inType="win:UInt32"/>
-                        <data name="Flags"    inType="win:UInt32"/>
-                      </struct>
-                      <UserData>
-                        <Type xmlns="myNs">
-                          <Count> %1 </Count>
-                          <ClrInstanceID> %2 </ClrInstanceID>
-                        </Type>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkRootStaticVar">
-                      <data name="Count" inType="win:UInt32" />
-                      <data name="AppDomainID" inType="win:UInt64" outType="win:HexInt64" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values" count="Count" >
-                        <data name="GCRootID"  inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="ObjectID"  inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="TypeID"    inType="win:UInt64" outType="win:HexInt64" />
-                        <data name="Flags"     inType="win:UInt32" map="GCRootStaticVarFlagsMap" />
-                        <data name="FieldName" inType="win:UnicodeString" />
-                      </struct>
-                      <UserData>
-                        <Type xmlns="myNs">
-                          <Count> %1 </Count>
-                          <ClrInstanceID> %2 </ClrInstanceID>
-                        </Type>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkRootConditionalWeakTableElementEdge">
-                      <data name="Index" inType="win:UInt32"    />
-                      <data name="Count" inType="win:UInt32"    />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct  name="Values"  count="Count"  >
-                        <data name="GCKeyNodeID"  inType="win:Pointer" />
-                        <data name="GCValueNodeID" inType="win:Pointer"  />
-                        <data name="GCRootID" inType="win:Pointer" />
-                      </struct>
-                      <UserData>
-                        <GCBulkRootConditionalWeakTableElementEdge xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkRootConditionalWeakTableElementEdge>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkNode">
-                      <data name="Index" inType="win:UInt32"   />
-                      <data name="Count" inType="win:UInt32"   />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values"  count="Count"   >
-                        <data  name="Address"  inType="win:Pointer" />
-                        <data  name="Size"     inType="win:UInt64"  />
-                        <data  name="TypeID"   inType="win:UInt64"  />
-                        <data  name="EdgeCount" inType="win:UInt64" />
-                      </struct>
-                      <UserData>
-                        <GCBulkNode xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkNode>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkEdge">
-                      <data  name="Index" inType="win:UInt32"    />
-                      <data  name="Count" inType="win:UInt32"    />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values"  count="Count"   >
-                        <data  name="Value"  inType="win:Pointer"  outType="win:HexInt64"  />
-                        <data name="ReferencingFieldID" inType="win:UInt32" />
-                      </struct>
-                      <UserData>
-                        <GCBulkEdge xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkEdge>
-                      </UserData>
-                    </template>
-
                     <template tid="GCSampledObjectAllocation">
                       <data name="Address" inType="win:Pointer"  />
                       <data name="TypeID"  inType="win:Pointer" />
@@ -2683,41 +2438,6 @@
                       </UserData>
                     </template>
 
-                    <template tid="GCBulkSurvivingObjectRanges">
-                      <data  name="Index" inType="win:UInt32"    />
-                      <data name="Count" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct  name="Values"  count="Count"  >
-                        <data  name="RangeBase" inType="win:Pointer"   outType="win:HexInt64"  />
-                        <data  name="RangeLength" inType="win:UInt64"  />
-                      </struct>
-                      <UserData>
-                        <GCBulkSurvivingObjectRanges xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkSurvivingObjectRanges>
-                      </UserData>
-                    </template>
-
-                    <template tid="GCBulkMovedObjectRanges">
-                      <data  name="Index" inType="win:UInt32"    />
-                      <data name="Count" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <struct name="Values"   count="Count"  >
-                        <data   name="OldRangeBase" inType="win:Pointer"  outType="win:HexInt64"  />
-                        <data   name="NewRangeBase" inType="win:Pointer"  outType="win:HexInt64"  />
-                        <data  name="RangeLength"  inType="win:UInt64"  />
-                      </struct>
-                      <UserData>
-                        <GCBulkMovedObjectRanges xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <Index> %2 </Index>
-                          <Count> %3 </Count>
-                        </GCBulkMovedObjectRanges>
-                      </UserData>
-                    </template>
-
                     <template tid="GCGenerationRange">
                       <data name="Generation"           inType="win:UInt8"    />
                       <data name="RangeStart"           inType="win:Pointer" outType="win:HexInt64"  />
@@ -2732,25 +2452,6 @@
                           <RangeUsedLength> %4 </RangeUsedLength>
                           <RangeReservedLength> %5 </RangeReservedLength>
                         </GCGenerationRange>
-                      </UserData>
-                    </template>
-
-                    <template tid="CodeSymbols">
-                      <data name="ModuleId"           inType="win:UInt64"    />
-                      <data name="TotalChunks"        inType="win:UInt16"  />
-                      <data name="ChunkNumber"        inType="win:UInt16"  />
-                      <data name="ChunkLength"        inType="win:UInt32"  />
-                      <data name="Chunk"              inType="win:Binary" length="ChunkLength"/>
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <UserData>
-                        <CodeSymbols xmlns="myNs">
-                          <ClrInstanceID> %1 </ClrInstanceID>
-                          <ModuleId> %2 </ModuleId>
-                          <TotalChunks> %3 </TotalChunks>
-                          <ChunkNumber> %4 </ChunkNumber>
-                          <ChunkLength> %5 </ChunkLength>
-                          <Chunk> %6 </Chunk>
-                        </CodeSymbols>
                       </UserData>
                     </template>
 
@@ -2974,45 +2675,10 @@
                            task="GarbageCollection"
                            symbol="GCFinalizersBegin_V1" message="$(string.RuntimePublisher.GCFinalizersBegin_V1EventMessage)"/>
 
-                    <event value="15" version="0" level="win:Informational"  template="BulkType"
-                           keywords ="TypeKeyword"  opcode="BulkType"
-                           task="Type"
-                           symbol="BulkType" message="$(string.RuntimePublisher.BulkTypeEventMessage)"/>
-
-                    <event value="16" version="0" level="win:Informational"  template="GCBulkRootEdge"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkRootEdge"
-                           task="GarbageCollection"
-                           symbol="GCBulkRootEdge" message="$(string.RuntimePublisher.GCBulkRootEdgeEventMessage)"/>
-
-                    <event value="17" version="0" level="win:Informational"  template="GCBulkRootConditionalWeakTableElementEdge"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkRootConditionalWeakTableElementEdge"
-                           task="GarbageCollection"
-                           symbol="GCBulkRootConditionalWeakTableElementEdge" message="$(string.RuntimePublisher.GCBulkRootConditionalWeakTableElementEdgeEventMessage)"/>
-
-                    <event value="18" version="0" level="win:Informational"  template="GCBulkNode"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkNode"
-                           task="GarbageCollection"
-                           symbol="GCBulkNode" message="$(string.RuntimePublisher.GCBulkNodeEventMessage)"/>
-
-                    <event value="19" version="0" level="win:Informational"  template="GCBulkEdge"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkEdge"
-                           task="GarbageCollection"
-                           symbol="GCBulkEdge" message="$(string.RuntimePublisher.GCBulkEdgeEventMessage)"/>
-
                     <event value="20" version="0" level="win:Informational"  template="GCSampledObjectAllocation"
                            keywords ="GCSampledObjectAllocationHighKeyword"  opcode="GCSampledObjectAllocation"
                            task="GarbageCollection"
                            symbol="GCSampledObjectAllocationHigh" message="$(string.RuntimePublisher.GCSampledObjectAllocationHighEventMessage)"/>
-
-                    <event value="21" version="0" level="win:Informational"  template="GCBulkSurvivingObjectRanges"
-                           keywords ="GCHeapSurvivalAndMovementKeyword"  opcode="GCBulkSurvivingObjectRanges"
-                           task="GarbageCollection"
-                           symbol="GCBulkSurvivingObjectRanges" message="$(string.RuntimePublisher.GCBulkSurvivingObjectRangesEventMessage)"/>
-
-                    <event value="22" version="0" level="win:Informational"  template="GCBulkMovedObjectRanges"
-                           keywords ="GCHeapSurvivalAndMovementKeyword"  opcode="GCBulkMovedObjectRanges"
-                           task="GarbageCollection"
-                           symbol="GCBulkMovedObjectRanges" message="$(string.RuntimePublisher.GCBulkMovedObjectRangesEventMessage)"/>
 
                     <event value="23" version="0" level="win:Informational"  template="GCGenerationRange"
                            keywords ="GCHeapSurvivalAndMovementKeyword"  opcode="GCGenerationRange"
@@ -3073,27 +2739,6 @@
                            keywords="GCKeyword" opcode="Triggered"
                            task="GarbageCollection"
                            symbol="GCTriggered" message="$(string.RuntimePublisher.GCTriggeredEventMessage)"/>
-
-                    <event value="36" version="0" level="win:Informational"  template="GCBulkRootCCW"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkRootCCW"
-                           task="GarbageCollection"
-                           symbol="GCBulkRootCCW" message="$(string.RuntimePublisher.GCBulkRootCCWEventMessage)"/>
-
-                    <event value="37" version="0" level="win:Informational"  template="GCBulkRCW"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkRCW"
-                           task="GarbageCollection"
-                           symbol="GCBulkRCW" message="$(string.RuntimePublisher.GCBulkRCWEventMessage)"/>
-
-                    <event value="38" version="0" level="win:Informational"  template="GCBulkRootStaticVar"
-                           keywords ="GCHeapDumpKeyword"  opcode="GCBulkRootStaticVar"
-                           task="GarbageCollection"
-                           symbol="GCBulkRootStaticVar" message="$(string.RuntimePublisher.GCBulkRootStaticVarEventMessage)"/>
-
-                    <event value="39" version="0" level="win:LogAlways" template="GCDynamicEvent"
-                           keywords= "GCKeyword GCHandleKeyword GCHeapDumpKeyword GCSampledObjectAllocationHighKeyword GCHeapSurvivalAndMovementKeyword GCHeapCollectKeyword GCHeapAndTypeNamesKeyword GCSampledObjectAllocationLowKeyword"
-                           opcode="GCDynamicEvent"
-                           task="GarbageCollection"
-                           symbol="GCDynamicEvent"/>
 
                     <!-- CLR Threading events, value reserved from 40 to 79 -->
                     <event value="40" version="0" level="win:Informational"  template="ClrWorkerThread"
@@ -3261,13 +2906,6 @@
                            opcode="Running"
                            symbol="ThreadRunning"
                            message="$(string.RuntimePublisher.ThreadRunningEventMessage)"/>
-
-                    <event value="72" version="0" level="win:Informational"  template="MethodDetails"
-                           keywords="MethodDiagnosticKeyword"
-                           task="CLRMethod"
-                           opcode="MethodDetails"
-                           symbol="MethodDetails"
-                           message="$(string.RuntimePublisher.MethodDetailsEventMessage)"/>
 
                     <event value="73" version="0" level="win:Informational"  template="TypeLoadStart"
                            keywords="TypeDiagnosticKeyword"
@@ -3529,12 +3167,6 @@
                            symbol="MethodJitTailCallFailedAnsi"
                            message="$(string.RuntimePublisher.MethodJitTailCallFailedEventMessage)"/>
 
-                    <event value="190" version="0" level="win:Verbose"  template="MethodILToNativeMap"
-                           keywords ="JittedMethodILToNativeMapKeyword" opcode="MethodILToNativeMap"
-                           task="CLRMethod"
-                           symbol="MethodILToNativeMap"
-                           message="$(string.RuntimePublisher.MethodILToNativeMapEventMessage)"/>
-
                     <event value="191" version="0" level="win:Verbose"  template="MethodJitTailCallFailed"
                            keywords ="JitTracingKeyword" opcode="JitTailCallFailed"
                            task="CLRMethod"
@@ -3712,11 +3344,6 @@
                            task="GarbageCollection"
                            symbol="GCJoin_V2" message="$(string.RuntimePublisher.GCJoin_V2EventMessage)"/>
 
-                    <event value="204" version="3" level="win:Informational"  template="GCPerHeapHistory_V3"
-                           keywords ="GCKeyword"  opcode="GCPerHeapHistory"
-                           task="GarbageCollection"
-                           symbol="GCPerHeapHistory_V3" message="$(string.RuntimePublisher.GCPerHeapHistory_V3EventMessage)"/>
-
                     <event value="205" version="2" level="win:Informational"  template="GCGlobalHeap_V2"
                            keywords ="GCKeyword"  opcode="GCGlobalHeapHistory"
                            task="GarbageCollection"
@@ -3756,14 +3383,10 @@
                            symbol="DebugExceptionProcessingEnd" />
 
                     <!-- CLR Code Symbol Emission events 260-269 -->
-                    <event value="260" version="0" level="win:Verbose" template="CodeSymbols"
-                           keywords="CodeSymbolsKeyword" opcode="win:Start"
-                           task="CodeSymbols"
-                           symbol="CodeSymbols" message="$(string.RuntimePublisher.CodeSymbolsEventMessage)"/>
 
-                    <event value="270" version="0" level="win:Informational"  template="EventSource"
+                    <!--<event value="270" version="0" level="win:Informational"  template="EventSource"
                            keywords="EventSourceKeyword"
-                           symbol="EventSource" />
+                           symbol="EventSource" />-->
 
                     <!-- Tiered compilation events 280-289 -->
                     <event value="280" version="0" level="win:Informational" template="TieredCompilationSettings"
@@ -4373,25 +3996,6 @@
                         </UserData>
                     </template>
 
-                    <template tid="MethodILToNativeMapRundown">
-                      <data name="MethodID" inType="win:UInt64" outType="win:HexInt64" />
-                      <data name="ReJITID" inType="win:UInt64" outType="win:HexInt64" />
-                      <data name="MethodExtent" inType="win:UInt8" />
-                      <data name="CountOfMapEntries" inType="win:UInt16" />
-                      <data name="ILOffsets" count="CountOfMapEntries" inType="win:UInt32" />
-                      <data name="NativeOffsets" count="CountOfMapEntries" inType="win:UInt32" />
-                      <data name="ClrInstanceID" inType="win:UInt16" />
-                      <UserData>
-                        <MethodILToNativeMap xmlns="myNs">
-                          <MethodID> %1 </MethodID>
-                          <ReJITID> %2 </ReJITID>
-                          <MethodExtent> %3 </MethodExtent>
-                          <CountOfMapEntries> %4 </CountOfMapEntries>
-                          <ClrInstanceID> %5 </ClrInstanceID>
-                        </MethodILToNativeMap>
-                      </UserData>
-                    </template>
-
                     <template tid="DCStartEnd">
                         <data name="ClrInstanceID" inType="win:UInt16" />
 
@@ -4566,18 +4170,6 @@
                            keywords ="JitRundownKeyword JittedMethodILToNativeMapRundownKeyword NGenRundownKeyword LoaderRundownKeyword" opcode="DCEndInit"
                            task="CLRMethodRundown"
                            symbol="DCEndInit_V1" message="$(string.RundownPublisher.DCEndInitEventMessage)"/>
-
-                    <event value="149" version="0" level="win:Verbose"  template="MethodILToNativeMapRundown"
-                           keywords ="JittedMethodILToNativeMapRundownKeyword" opcode="MethodDCStartILToNativeMap"
-                           task="CLRMethodRundown"
-                           symbol="MethodDCStartILToNativeMap"
-                           message="$(string.RundownPublisher.MethodDCStartILToNativeMapEventMessage)"/>
-
-                    <event value="150" version="0" level="win:Verbose"  template="MethodILToNativeMapRundown"
-                           keywords ="JittedMethodILToNativeMapRundownKeyword" opcode="MethodDCEndILToNativeMap"
-                           task="CLRMethodRundown"
-                           symbol="MethodDCEndILToNativeMap"
-                           message="$(string.RundownPublisher.MethodDCEndILToNativeMapEventMessage)"/>
 
                     <!-- CLR Loader Rundown Events -->
                     <event value="151" version="0" level="win:Informational"  template="DomainModuleLoadUnloadRundown"

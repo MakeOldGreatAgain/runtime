@@ -66,6 +66,7 @@ if(CLR_CMAKE_TARGET_WIN32)
     securitywrapper.cpp
     securityutil.cpp
     stacktrace.cpp
+    winxpwrap.cpp
   )
 endif(CLR_CMAKE_TARGET_WIN32)
 

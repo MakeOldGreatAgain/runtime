@@ -95,10 +95,14 @@ endif(CLR_CMAKE_TARGET_WIN32)
 
 if(CLR_CMAKE_HOST_WIN32)
   set (GC_LINK_LIBRARIES
-    ${STATIC_MT_CRT_LIB}
-    ${STATIC_MT_VCRT_LIB}
+    utilcodestaticnohost
+    ${STATIC_MD_CRT_LIB}
     kernel32.lib
-    advapi32.lib)
+    advapi32.lib
+    Psapi.lib
+    oleaut32.lib
+    user32.lib
+    ntdll.lib)
 else()
   set (GC_LINK_LIBRARIES)
 endif(CLR_CMAKE_HOST_WIN32)

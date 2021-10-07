@@ -816,12 +816,12 @@ BYTE * ClrVirtualAllocWithinRange(const BYTE *pMinAddr,
 #if !defined(FEATURE_REDHAWK)
 /*static*/ //CPUGroupInfo::PNTQSIEx CPUGroupInfo::m_pNtQuerySystemInformationEx = NULL;
 
-/*static*/ BOOL CPUGroupInfo::GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP relationship,
-                         SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *slpiex, PDWORD count)
-{
-    LIMITED_METHOD_CONTRACT;
-    return ::GetLogicalProcessorInformationEx(relationship, slpiex, count);
-}
+///*static*/ BOOL CPUGroupInfo::GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP relationship,
+//                         SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *slpiex, PDWORD count)
+//{
+//    LIMITED_METHOD_CONTRACT;
+//    return ::GetLogicalProcessorInformationEx(relationship, slpiex, count);
+//}
 
 /*static*/ BOOL CPUGroupInfo::SetThreadGroupAffinity(HANDLE h,
                         const GROUP_AFFINITY *groupAffinity, GROUP_AFFINITY *previousGroupAffinity)

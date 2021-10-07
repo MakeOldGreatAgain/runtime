@@ -22,13 +22,15 @@ etw_dirname = "etw"
 replacements = [
     (r"EventEnabled", "EventXplatEnabled"),
     (r"\bPVOID\b", "void*"),
+    (r"__declspec\(selectany\) BOOLEAN McGenTracingSupportInit = FALSE", "const BOOLEAN McGenTracingSupportInit = TRUE"),
+    (r"__declspec\(selectany\) BOOLEAN McGenPreVista = FALSE", "const BOOLEAN McGenPreVista = TRUE")
 ]
 counted_replacements = [
     # There is a bug in the MC code generator that miscomputes the size of ETW events
     # which have variable size arrays of variable size arrays. This occurred in our GCBulkType
     # event. This workaround replaces the bad size computation with the correct one. See
     # https://github.com/dotnet/coreclr/pull/25454 for more information"
-    (r"_Arg0 \* _Arg2_Len_", "_Arg2_Len_", 1)
+    (r"_Arg0 \* _Arg2_Len_", "_Arg2_Len_", 0)
 ]
 
 stdprolog_cpp="""
@@ -49,7 +51,7 @@ def genProviderInterface(manifest, intermediate):
     if not os.path.exists(provider_dirname):
         os.makedirs(provider_dirname)
 
-    cmd = ['mc.exe', '-h', provider_dirname, '-r', provider_dirname, '-b', '-co', '-um', '-p', 'FireEtXplat', manifest]
+    cmd = ['mc.exe', '-mof', '-h', provider_dirname, '-r', provider_dirname, '-b', '-co', '-um', '-p', 'FireEtXplat', manifest]
     subprocess.check_call(cmd)
 
     header_text = None

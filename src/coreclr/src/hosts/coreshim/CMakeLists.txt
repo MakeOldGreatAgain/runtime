@@ -18,8 +18,8 @@ target_link_libraries(CoreShim
     oleaut32.lib
     uuid.lib
     user32.lib
-    ${STATIC_MT_CRT_LIB}
-    ${STATIC_MT_VCRT_LIB}
+    ntdll.lib
+    ${STATIC_MD_CRT_LIB}
 )
 
 install_clr(TARGETS CoreShim)

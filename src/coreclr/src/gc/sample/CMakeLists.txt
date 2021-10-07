@@ -1,5 +1,7 @@
 project(clrgcsample)
 
+include(${CLR_ENG_NATIVE_DIR}/configurecompiler.cmake)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(..)
@@ -41,16 +43,27 @@ endif (CLR_CMAKE_TARGET_ARCH_AMD64 AND CLR_CMAKE_TARGET_WIN32)
 
 if(CLR_CMAKE_TARGET_WIN32)
   set (GC_LINK_LIBRARIES
-    ${STATIC_MT_CRT_LIB}
-    ${STATIC_MT_VCRT_LIB}
+    utilcodestaticnohost
+    ${STATIC_MD_CRT_LIB}
     kernel32.lib
-    advapi32.lib)
+    advapi32.lib
+    Psapi.lib
+    oleaut32.lib
+    user32.lib
+    ntdll.lib
+    )
 endif(CLR_CMAKE_TARGET_WIN32)
 
 if(CLR_CMAKE_TARGET_WIN32)
     list(APPEND SOURCES
         ../windows/gcenv.windows.cpp)
     add_definitions(-DUNICODE)
+    add_definitions(-DWIN32)
+    add_definitions(-D_WIN32)
+    add_definitions(-DWINVER=0x0501)
+    add_definitions(-D_WIN32_WINNT=0x0501)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else()
     list(APPEND SOURCES
         ../gcenv.unix.cpp)

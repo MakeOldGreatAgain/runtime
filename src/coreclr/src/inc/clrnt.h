@@ -92,7 +92,7 @@
 #define EXCEPTION_CHAIN_END ((PEXCEPTION_REGISTRATION_RECORD)-1)
 
 typedef signed char SCHAR;
-typedef SCHAR *PSCHAR;
+typedef SCHAR* PSCHAR;
 typedef LONG NTSTATUS;
 
 #ifndef HOST_UNIX
@@ -121,7 +121,7 @@ typedef enum _THREADINFOCLASS {
     ThreadHideFromDebugger,
     ThreadBreakOnTermination,
     MaxThreadInfoClass
-    } THREADINFOCLASS;
+} THREADINFOCLASS;
 
 typedef enum _SYSTEM_INFORMATION_CLASS {
     SystemBasicInformation,
@@ -194,7 +194,7 @@ typedef enum _SYSTEM_INFORMATION_CLASS {
 
 typedef enum _EVENT_INFORMATION_CLASS {
     EventBasicInformation
-    } EVENT_INFORMATION_CLASS;
+} EVENT_INFORMATION_CLASS;
 
 typedef struct _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION {
     LARGE_INTEGER IdleTime;
@@ -203,17 +203,17 @@ typedef struct _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION {
     LARGE_INTEGER DpcTime;          // DEVL only
     LARGE_INTEGER InterruptTime;    // DEVL only
     ULONG InterruptCount;
-} SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, *PSYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
+} SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, * PSYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
 
 typedef enum _EVENT_TYPE {
     NotificationEvent,
     SynchronizationEvent
-    } EVENT_TYPE;
+} EVENT_TYPE;
 
 typedef struct _EVENT_BASIC_INFORMATION {
     EVENT_TYPE EventType;
     LONG EventState;
-} EVENT_BASIC_INFORMATION, *PEVENT_BASIC_INFORMATION;
+} EVENT_BASIC_INFORMATION, * PEVENT_BASIC_INFORMATION;
 
 #define RTL_MEG                   (1024UL * 1024UL)
 #define RTLP_IMAGE_MAX_DOS_HEADER ( 256UL * RTL_MEG)
@@ -221,17 +221,17 @@ typedef struct _EVENT_BASIC_INFORMATION {
 typedef struct _SYSTEM_KERNEL_DEBUGGER_INFORMATION {
     BOOLEAN KernelDebuggerEnabled;
     BOOLEAN KernelDebuggerNotPresent;
-} SYSTEM_KERNEL_DEBUGGER_INFORMATION, *PSYSTEM_KERNEL_DEBUGGER_INFORMATION;
+} SYSTEM_KERNEL_DEBUGGER_INFORMATION, * PSYSTEM_KERNEL_DEBUGGER_INFORMATION;
 
 typedef struct _STRING {
     USHORT Length;
     USHORT MaximumLength;
 #ifdef MIDL_PASS
-    [size_is(MaximumLength), length_is(Length) ]
+    [size_is(MaximumLength), length_is(Length)]
 #endif // MIDL_PASS
     PCHAR Buffer;
 } STRING;
-typedef STRING *PSTRING;
+typedef STRING* PSTRING;
 
 typedef STRING ANSI_STRING;
 typedef PSTRING PANSI_STRING;
@@ -244,13 +244,13 @@ typedef struct _UNICODE_STRING {
     USHORT Length;
     USHORT MaximumLength;
 #ifdef MIDL_PASS
-    [size_is(MaximumLength / 2), length_is((Length) / 2) ] USHORT * Buffer;
+    [size_is(MaximumLength / 2), length_is((Length) / 2)] USHORT* Buffer;
 #else // MIDL_PASS
     PWSTR  Buffer;
 #endif // MIDL_PASS
 } UNICODE_STRING;
-typedef UNICODE_STRING *PUNICODE_STRING;
-typedef const UNICODE_STRING *PCUNICODE_STRING;
+typedef UNICODE_STRING* PUNICODE_STRING;
+typedef const UNICODE_STRING* PCUNICODE_STRING;
 #define UNICODE_NULL ((WCHAR)0) // winnt
 
 typedef struct _STRING32 {
@@ -258,13 +258,13 @@ typedef struct _STRING32 {
     USHORT   MaximumLength;
     ULONG  Buffer;
 } STRING32;
-typedef STRING32 *PSTRING32;
+typedef STRING32* PSTRING32;
 
 typedef STRING32 UNICODE_STRING32;
-typedef UNICODE_STRING32 *PUNICODE_STRING32;
+typedef UNICODE_STRING32* PUNICODE_STRING32;
 
 typedef STRING32 ANSI_STRING32;
-typedef ANSI_STRING32 *PANSI_STRING32;
+typedef ANSI_STRING32* PANSI_STRING32;
 
 
 typedef struct _STRING64 {
@@ -272,13 +272,13 @@ typedef struct _STRING64 {
     USHORT   MaximumLength;
     ULONGLONG  Buffer;
 } STRING64;
-typedef STRING64 *PSTRING64;
+typedef STRING64* PSTRING64;
 
 typedef STRING64 UNICODE_STRING64;
-typedef UNICODE_STRING64 *PUNICODE_STRING64;
+typedef UNICODE_STRING64* PUNICODE_STRING64;
 
 typedef STRING64 ANSI_STRING64;
-typedef ANSI_STRING64 *PANSI_STRING64;
+typedef ANSI_STRING64* PANSI_STRING64;
 
 #define GDI_HANDLE_BUFFER_SIZE32  34
 #define GDI_HANDLE_BUFFER_SIZE64  60
@@ -291,7 +291,7 @@ typedef ANSI_STRING64 *PANSI_STRING64;
 
 typedef ULONG GDI_HANDLE_BUFFER32[GDI_HANDLE_BUFFER_SIZE32];
 typedef ULONG GDI_HANDLE_BUFFER64[GDI_HANDLE_BUFFER_SIZE64];
-typedef ULONG GDI_HANDLE_BUFFER  [GDI_HANDLE_BUFFER_SIZE  ];
+typedef ULONG GDI_HANDLE_BUFFER[GDI_HANDLE_BUFFER_SIZE];
 
 
 typedef struct _PEB_LDR_DATA {
@@ -302,12 +302,12 @@ typedef struct _PEB_LDR_DATA {
     LIST_ENTRY InMemoryOrderModuleList;
     LIST_ENTRY InInitializationOrderModuleList;
     PVOID EntryInProgress;
-} PEB_LDR_DATA, *PPEB_LDR_DATA;
+} PEB_LDR_DATA, * PPEB_LDR_DATA;
 
 typedef struct _PEB_FREE_BLOCK {
-    struct _PEB_FREE_BLOCK *Next;
+    struct _PEB_FREE_BLOCK* Next;
     ULONG Size;
-} PEB_FREE_BLOCK, *PPEB_FREE_BLOCK;
+} PEB_FREE_BLOCK, * PPEB_FREE_BLOCK;
 
 typedef PVOID* PPVOID;
 
@@ -345,7 +345,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY {
         };
     };
     PVOID EntryPointActivationContext;
-} LDR_DATA_TABLE_ENTRY, *PLDR_DATA_TABLE_ENTRY;
+} LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
 
 #define TYPE3(arg) arg
 
@@ -482,7 +482,7 @@ typedef struct _PEB {
     //
     SIZE_T MinimumStackCommit;
 
-} PEB, *PPEB;
+} PEB, * PPEB;
 
 #define ACTIVATION_CONTEXT_STACK_FLAG_QUERIES_DISABLED (0x00000001)
 
@@ -500,25 +500,25 @@ typedef struct _ACTIVATION_CONTEXT_STACK {
         ULONGLONG DeactivationCycles;
     } Counters;
 #endif // NT_SXS_PERF_COUNTERS_ENABLED
-} ACTIVATION_CONTEXT_STACK, *PACTIVATION_CONTEXT_STACK;
+} ACTIVATION_CONTEXT_STACK, * PACTIVATION_CONTEXT_STACK;
 
-typedef const ACTIVATION_CONTEXT_STACK *PCACTIVATION_CONTEXT_STACK;
+typedef const ACTIVATION_CONTEXT_STACK* PCACTIVATION_CONTEXT_STACK;
 
 #define TEB_ACTIVE_FRAME_CONTEXT_FLAG_EXTENDED (0x00000001)
 
 typedef struct _TEB_ACTIVE_FRAME_CONTEXT {
     ULONG Flags;
     PCSTR FrameName;
-} TEB_ACTIVE_FRAME_CONTEXT, *PTEB_ACTIVE_FRAME_CONTEXT;
+} TEB_ACTIVE_FRAME_CONTEXT, * PTEB_ACTIVE_FRAME_CONTEXT;
 
-typedef const struct _TEB_ACTIVE_FRAME_CONTEXT *PCTEB_ACTIVE_FRAME_CONTEXT;
+typedef const struct _TEB_ACTIVE_FRAME_CONTEXT* PCTEB_ACTIVE_FRAME_CONTEXT;
 
 typedef struct _TEB_ACTIVE_FRAME_CONTEXT_EX {
     TEB_ACTIVE_FRAME_CONTEXT BasicContext;
     PCSTR SourceLocation; // e.g. "Z:\foo\bar\baz.c"
-} TEB_ACTIVE_FRAME_CONTEXT_EX, *PTEB_ACTIVE_FRAME_CONTEXT_EX;
+} TEB_ACTIVE_FRAME_CONTEXT_EX, * PTEB_ACTIVE_FRAME_CONTEXT_EX;
 
-typedef const struct _TEB_ACTIVE_FRAME_CONTEXT_EX *PCTEB_ACTIVE_FRAME_CONTEXT_EX;
+typedef const struct _TEB_ACTIVE_FRAME_CONTEXT_EX* PCTEB_ACTIVE_FRAME_CONTEXT_EX;
 
 #define TEB_ACTIVE_FRAME_FLAG_EXTENDED (0x00000001)
 
@@ -526,22 +526,22 @@ typedef struct _TEB_ACTIVE_FRAME {
     ULONG Flags;
     TYPE3(struct _TEB_ACTIVE_FRAME*) Previous;
     PCTEB_ACTIVE_FRAME_CONTEXT Context;
-} TEB_ACTIVE_FRAME, *PTEB_ACTIVE_FRAME;
+} TEB_ACTIVE_FRAME, * PTEB_ACTIVE_FRAME;
 
-typedef const struct _TEB_ACTIVE_FRAME *PCTEB_ACTIVE_FRAME;
+typedef const struct _TEB_ACTIVE_FRAME* PCTEB_ACTIVE_FRAME;
 
 typedef struct _TEB_ACTIVE_FRAME_EX {
     TEB_ACTIVE_FRAME BasicFrame;
     PVOID ExtensionIdentifier; // use address of your DLL Main or something unique to your mapping in the address space
-} TEB_ACTIVE_FRAME_EX, *PTEB_ACTIVE_FRAME_EX;
+} TEB_ACTIVE_FRAME_EX, * PTEB_ACTIVE_FRAME_EX;
 
-typedef const struct _TEB_ACTIVE_FRAME_EX *PCTEB_ACTIVE_FRAME_EX;
+typedef const struct _TEB_ACTIVE_FRAME_EX* PCTEB_ACTIVE_FRAME_EX;
 
 typedef struct _CLIENT_ID {
     HANDLE UniqueProcess;
     HANDLE UniqueThread;
 } CLIENT_ID;
-typedef CLIENT_ID *PCLIENT_ID;
+typedef CLIENT_ID* PCLIENT_ID;
 
 #define GDI_BATCH_BUFFER_SIZE 310
 
@@ -549,14 +549,14 @@ typedef struct _GDI_TEB_BATCH {
     ULONG    Offset;
     ULONG_PTR HDC;
     ULONG    Buffer[GDI_BATCH_BUFFER_SIZE];
-} GDI_TEB_BATCH,*PGDI_TEB_BATCH;
+} GDI_TEB_BATCH, * PGDI_TEB_BATCH;
 
 typedef struct _Wx86ThreadState {
     PULONG  CallBx86Eip;
     PVOID   DeallocationCpu;
     BOOLEAN UseKnownWx86Dll;
     char    OleStubInvoked;
-} WX86THREAD, *PWX86THREAD;
+} WX86THREAD, * PWX86THREAD;
 
 #define STATIC_UNICODE_BUFFER_LENGTH 261
 #define WIN32_CLIENT_INFO_LENGTH 62
@@ -634,12 +634,12 @@ typedef struct _TEB {
     HANDLE CurrentTransactionHandle;// reserved for TxF transaction context
     PTEB_ACTIVE_FRAME ActiveFrame;
 } TEB;
-typedef TEB *PTEB;
+typedef TEB* PTEB;
 
 typedef struct _CURDIR {
     UNICODE_STRING DosPath;
     HANDLE Handle;
-} CURDIR, *PCURDIR;
+} CURDIR, * PCURDIR;
 
 #define RTL_USER_PROC_CURDIR_CLOSE      0x00000002
 #define RTL_USER_PROC_CURDIR_INHERIT    0x00000003
@@ -649,7 +649,7 @@ typedef struct _RTL_DRIVE_LETTER_CURDIR {
     USHORT Length;
     ULONG TimeStamp;
     STRING DosPath;
-} RTL_DRIVE_LETTER_CURDIR, *PRTL_DRIVE_LETTER_CURDIR;
+} RTL_DRIVE_LETTER_CURDIR, * PRTL_DRIVE_LETTER_CURDIR;
 
 
 #define RTL_MAX_DRIVE_LETTERS 32
@@ -688,8 +688,8 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     UNICODE_STRING DesktopInfo;     // ProcessParameters
     UNICODE_STRING ShellInfo;       // ProcessParameters
     UNICODE_STRING RuntimeData;     // ProcessParameters
-    RTL_DRIVE_LETTER_CURDIR CurrentDirectores[ RTL_MAX_DRIVE_LETTERS ];
-} RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
+    RTL_DRIVE_LETTER_CURDIR CurrentDirectores[RTL_MAX_DRIVE_LETTERS];
+} RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
 
 
 typedef enum _PROCESSINFOCLASS {
@@ -727,7 +727,7 @@ typedef enum _PROCESSINFOCLASS {
     ProcessDebugFlags,
     ProcessHandleTracing,
     MaxProcessInfoClass             // MaxProcessInfoClass should always be the last enum
-    } PROCESSINFOCLASS;
+} PROCESSINFOCLASS;
 
 
 typedef struct _VM_COUNTERS {
@@ -743,7 +743,7 @@ typedef struct _VM_COUNTERS {
     SIZE_T PagefileUsage;
     SIZE_T PeakPagefileUsage;
 } VM_COUNTERS;
-typedef VM_COUNTERS *PVM_COUNTERS;
+typedef VM_COUNTERS* PVM_COUNTERS;
 
 #undef TYPE3
 
@@ -777,7 +777,7 @@ typedef struct _DYNAMIC_FUNCTION_TABLE {
     PWSTR OutOfProcessCallbackDll;
     FUNCTION_TABLE_TYPE Type;
     ULONG EntryCount;
-} DYNAMIC_FUNCTION_TABLE, *PDYNAMIC_FUNCTION_TABLE;
+} DYNAMIC_FUNCTION_TABLE, * PDYNAMIC_FUNCTION_TABLE;
 
 #endif // !TARGET_X86
 
@@ -805,7 +805,7 @@ PEXCEPTION_ROUTINE
     IN ULONG64 ControlPc,
     IN PT_RUNTIME_FUNCTION FunctionEntry,
     IN OUT PCONTEXT ContextRecord,
-    OUT PVOID *HandlerData,
+    OUT PVOID* HandlerData,
     OUT PULONG64 EstablisherFrame,
     IN OUT PKNONVOLATILE_CONTEXT_POINTERS ContextPointers OPTIONAL
     );
@@ -820,10 +820,10 @@ RtlVirtualUnwind_Unsafe(
     IN ULONG64 ControlPc,
     IN PT_RUNTIME_FUNCTION FunctionEntry,
     IN OUT PCONTEXT ContextRecord,
-    OUT PVOID *HandlerData,
+    OUT PVOID* HandlerData,
     OUT PULONG64 EstablisherFrame,
     IN OUT PKNONVOLATILE_CONTEXT_POINTERS ContextPointers OPTIONAL
-    );
+);
 #endif // !HOST_UNIX
 
 #endif // TARGET_AMD64
@@ -840,11 +840,11 @@ RtlVirtualUnwind_Unsafe(
 typedef struct _RUNTIME_FUNCTION {
     DWORD BeginAddress;
     DWORD UnwindData;
-} RUNTIME_FUNCTION, *PRUNTIME_FUNCTION;
+} RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
 
 typedef struct _DISPATCHER_CONTEXT {
     _EXCEPTION_REGISTRATION_RECORD* RegistrationPointer;
-} DISPATCHER_CONTEXT, *PDISPATCHER_CONTEXT;
+} DISPATCHER_CONTEXT, * PDISPATCHER_CONTEXT;
 
 #endif // !TARGET_UNIX
 
@@ -857,10 +857,10 @@ typedef struct _DISPATCHER_CONTEXT {
 
 FORCEINLINE
 DWORD
-RtlpGetFunctionEndAddress (
+RtlpGetFunctionEndAddress(
     __in PT_RUNTIME_FUNCTION FunctionEntry,
     __in TADDR ImageBase
-    )
+)
 {
     PTR_UNWIND_INFO pUnwindInfo = (PTR_UNWIND_INFO)(ImageBase + FunctionEntry->UnwindData);
 
@@ -876,16 +876,16 @@ EXTERN_C
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
-RtlVirtualUnwind (
+RtlVirtualUnwind(
     __in DWORD HandlerType,
     __in DWORD ImageBase,
     __in DWORD ControlPc,
     __in PRUNTIME_FUNCTION FunctionEntry,
     __inout PT_CONTEXT ContextRecord,
-    __out PVOID *HandlerData,
+    __out PVOID* HandlerData,
     __out PDWORD EstablisherFrame,
     __inout_opt PT_KNONVOLATILE_CONTEXT_POINTERS ContextPointers
-    );
+);
 #endif // FEATURE_EH_FUNCLETS
 
 #endif // TARGET_X86
@@ -905,17 +905,18 @@ RtlVirtualUnwind (
 // Taken from minkernel\ntos\rtl\arm\ntrtlarm.h.
 FORCEINLINE
 ULONG
-RtlpGetFunctionEndAddress (
+RtlpGetFunctionEndAddress(
     __in PT_RUNTIME_FUNCTION FunctionEntry,
     __in TADDR ImageBase
-    )
+)
 {
     ULONG FunctionLength;
 
     FunctionLength = FunctionEntry->UnwindData;
     if ((FunctionLength & 3) != 0) {
         FunctionLength = (FunctionLength >> 2) & 0x7ff;
-    } else {
+    }
+    else {
         FunctionLength = *(PTR_ULONG)(ImageBase + FunctionLength) & 0x3ffff;
     }
 
@@ -931,7 +932,7 @@ RtlpGetFunctionEndAddress (
 
 typedef struct _UNWIND_INFO {
     // dummy
-} UNWIND_INFO, *PUNWIND_INFO;
+} UNWIND_INFO, * PUNWIND_INFO;
 
 #if defined(TARGET_UNIX) || defined(HOST_X86)
 
@@ -939,16 +940,16 @@ EXTERN_C
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
-RtlVirtualUnwind (
+RtlVirtualUnwind(
     __in DWORD HandlerType,
     __in DWORD ImageBase,
     __in DWORD ControlPc,
     __in PT_RUNTIME_FUNCTION FunctionEntry,
     __inout PT_CONTEXT ContextRecord,
-    __out PVOID *HandlerData,
+    __out PVOID* HandlerData,
     __out PDWORD EstablisherFrame,
     __inout_opt PT_KNONVOLATILE_CONTEXT_POINTERS ContextPointers
-    );
+);
 #endif // TARGET_UNIX || HOST_X86
 
 #define UNW_FLAG_NHANDLER 0x0
@@ -966,17 +967,18 @@ RtlVirtualUnwind (
 // using the unwind info on ARM64. (see ExternalAPIs\Win9CoreSystem\inc\winnt.h)
 FORCEINLINE
 ULONG64
-RtlpGetFunctionEndAddress (
+RtlpGetFunctionEndAddress(
     __in PT_RUNTIME_FUNCTION FunctionEntry,
     __in ULONG64 ImageBase
-    )
+)
 {
     ULONG64 FunctionLength;
 
     FunctionLength = FunctionEntry->UnwindData;
     if ((FunctionLength & 3) != 0) {
         FunctionLength = (FunctionLength >> 2) & 0x7ff;
-    } else {
+    }
+    else {
         FunctionLength = *(PTR_ULONG64)(ImageBase + FunctionLength) & 0x3ffff;
     }
 
@@ -992,7 +994,7 @@ RtlpGetFunctionEndAddress (
 
 typedef struct _UNWIND_INFO {
     // dummy
-} UNWIND_INFO, *PUNWIND_INFO;
+} UNWIND_INFO, * PUNWIND_INFO;
 
 EXTERN_C
 NTSYSAPI
@@ -1004,10 +1006,10 @@ RtlVirtualUnwind(
     IN ULONG64 ControlPc,
     IN PRUNTIME_FUNCTION FunctionEntry,
     IN OUT PCONTEXT ContextRecord,
-    OUT PVOID *HandlerData,
+    OUT PVOID* HandlerData,
     OUT PULONG64 EstablisherFrame,
     IN OUT PKNONVOLATILE_CONTEXT_POINTERS ContextPointers OPTIONAL
-    );
+);
 
 #ifndef IMAGE_FILE_MACHINE_ARM64
 #define IMAGE_FILE_MACHINE_ARM64             0xAA64  // ARM64 Little-Endian
@@ -1027,4 +1029,35 @@ RtlVirtualUnwind(
 
 #endif
 
+typedef LONG KPRIORITY;
+
+typedef struct _THREAD_BASIC_INFORMATION
+{
+    NTSTATUS ExitStatus;
+    PTEB TebBaseAddress;
+    CLIENT_ID ClientId;
+    KAFFINITY AffinityMask;
+    KPRIORITY Priority;
+    KPRIORITY BasePriority;
+} THREAD_BASIC_INFORMATION, * PTHREAD_BASIC_INFORMATION;
+
+EXTERN_C
+NTSYSAPI
+ULONG
+NTAPI
+RtlNtStatusToDosError(
+    NTSTATUS Status
+);
+
+EXTERN_C
+NTSYSAPI
+NTSTATUS
+NTAPI
+NtQueryInformationThread(
+    IN HANDLE ThreadHandle,
+    IN THREADINFOCLASS ThreadInformationClass,
+    OUT PVOID ThreadInformation,
+    IN ULONG ThreadInformationLength,
+    OUT OPTIONAL PULONG ReturnLength
+);
 #endif  // CLRNT_H_

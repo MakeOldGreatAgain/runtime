@@ -717,12 +717,12 @@ void ETW::GCLog::MovedReference(
         // If buffer is now full, empty it into ETW
         if (pContext->cBulkMovedObjectRanges == _countof(pContext->rgGCBulkMovedObjectRanges))
         {
-            FireEtwGCBulkMovedObjectRanges(
-                pContext->iCurBulkMovedObjectRanges,
-                pContext->cBulkMovedObjectRanges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGCBulkMovedObjectRanges[0]),
-                &pContext->rgGCBulkMovedObjectRanges[0]);
+            //FireEtwGCBulkMovedObjectRanges(
+            //    pContext->iCurBulkMovedObjectRanges,
+            //    pContext->cBulkMovedObjectRanges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGCBulkMovedObjectRanges[0]),
+            //    &pContext->rgGCBulkMovedObjectRanges[0]);
 
             pContext->iCurBulkMovedObjectRanges++;
             pContext->Clear();
@@ -742,12 +742,12 @@ void ETW::GCLog::MovedReference(
         // If buffer is now full, empty it into ETW
         if (pContext->cBulkSurvivingObjectRanges == _countof(pContext->rgGCBulkSurvivingObjectRanges))
         {
-            FireEtwGCBulkSurvivingObjectRanges(
-                pContext->iCurBulkSurvivingObjectRanges,
-                pContext->cBulkSurvivingObjectRanges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGCBulkSurvivingObjectRanges[0]),
-                &pContext->rgGCBulkSurvivingObjectRanges[0]);
+            //FireEtwGCBulkSurvivingObjectRanges(
+            //    pContext->iCurBulkSurvivingObjectRanges,
+            //    pContext->cBulkSurvivingObjectRanges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGCBulkSurvivingObjectRanges[0]),
+            //    &pContext->rgGCBulkSurvivingObjectRanges[0]);
 
             pContext->iCurBulkSurvivingObjectRanges++;
             pContext->Clear();
@@ -829,22 +829,22 @@ VOID ETW::GCLog::EndMovedReferences(size_t profilingContext, BOOL fAllowProfApiN
 
     if (pContext->cBulkMovedObjectRanges > 0)
     {
-        FireEtwGCBulkMovedObjectRanges(
-            pContext->iCurBulkMovedObjectRanges,
-            pContext->cBulkMovedObjectRanges,
-            GetClrInstanceId(),
-            sizeof(pContext->rgGCBulkMovedObjectRanges[0]),
-            &pContext->rgGCBulkMovedObjectRanges[0]);
+        //FireEtwGCBulkMovedObjectRanges(
+        //    pContext->iCurBulkMovedObjectRanges,
+        //    pContext->cBulkMovedObjectRanges,
+        //    GetClrInstanceId(),
+        //    sizeof(pContext->rgGCBulkMovedObjectRanges[0]),
+        //    &pContext->rgGCBulkMovedObjectRanges[0]);
     }
 
     if (pContext->cBulkSurvivingObjectRanges > 0)
     {
-        FireEtwGCBulkSurvivingObjectRanges(
-            pContext->iCurBulkSurvivingObjectRanges,
-            pContext->cBulkSurvivingObjectRanges,
-            GetClrInstanceId(),
-            sizeof(pContext->rgGCBulkSurvivingObjectRanges[0]),
-            &pContext->rgGCBulkSurvivingObjectRanges[0]);
+        //FireEtwGCBulkSurvivingObjectRanges(
+        //    pContext->iCurBulkSurvivingObjectRanges,
+        //    pContext->cBulkSurvivingObjectRanges,
+        //    GetClrInstanceId(),
+        //    sizeof(pContext->rgGCBulkSurvivingObjectRanges[0]),
+        //    &pContext->rgGCBulkSurvivingObjectRanges[0]);
     }
 
     pCtxForEtwAndProfapi->pctxEtw = NULL;
@@ -1134,21 +1134,21 @@ void BulkComLogger::FlushRcw()
             ETW::TypeSystemLog::LogTypeAndParametersIfNecessary(m_typeLogger, m_etwRcwData[i].TypeID, ETW::TypeSystemLog::kTypeLogBehaviorTakeLockAndLogIfFirstTime);
     }
 
-    unsigned short instance = GetClrInstanceId();
-
-#if !defined(HOST_UNIX)
-    EVENT_DATA_DESCRIPTOR eventData[3];
-    EventDataDescCreate(&eventData[0], &m_currRcw, sizeof(const unsigned int));
-    EventDataDescCreate(&eventData[1], &instance, sizeof(const unsigned short));
-    EventDataDescCreate(&eventData[2], m_etwRcwData, sizeof(EventRCWEntry) * m_currRcw);
-
-    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRCW, _countof(eventData), eventData);
-#else
-    ULONG result = FireEtXplatGCBulkRCW(m_currRcw, instance, sizeof(EventRCWEntry) * m_currRcw, m_etwRcwData);
-#endif // !defined(HOST_UNIX)
-    result |= EventPipeWriteEventGCBulkRCW(m_currRcw, instance, sizeof(EventRCWEntry) * m_currRcw, m_etwRcwData);
-
-    _ASSERTE(result == ERROR_SUCCESS);
+//    unsigned short instance = GetClrInstanceId();
+//
+//#if !defined(HOST_UNIX)
+//    EVENT_DATA_DESCRIPTOR eventData[3];
+//    EventDataDescCreate(&eventData[0], &m_currRcw, sizeof(const unsigned int));
+//    EventDataDescCreate(&eventData[1], &instance, sizeof(const unsigned short));
+//    EventDataDescCreate(&eventData[2], m_etwRcwData, sizeof(EventRCWEntry) * m_currRcw);
+//
+//    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRCW, _countof(eventData), eventData);
+//#else
+//    ULONG result = FireEtXplatGCBulkRCW(m_currRcw, instance, sizeof(EventRCWEntry) * m_currRcw, m_etwRcwData);
+//#endif // !defined(HOST_UNIX)
+//    result |= EventPipeWriteEventGCBulkRCW(m_currRcw, instance, sizeof(EventRCWEntry) * m_currRcw, m_etwRcwData);
+//
+//    _ASSERTE(result == ERROR_SUCCESS);
 
     m_currRcw = 0;
 }
@@ -1227,19 +1227,19 @@ void BulkComLogger::FlushCcw()
 
     unsigned short instance = GetClrInstanceId();
 
-#if !defined(HOST_UNIX)
-    EVENT_DATA_DESCRIPTOR eventData[3];
-    EventDataDescCreate(&eventData[0], &m_currCcw, sizeof(const unsigned int));
-    EventDataDescCreate(&eventData[1], &instance, sizeof(const unsigned short));
-    EventDataDescCreate(&eventData[2], m_etwCcwData, sizeof(EventCCWEntry) * m_currCcw);
-
-    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRootCCW, _countof(eventData), eventData);
-#else
-    ULONG result = FireEtXplatGCBulkRootCCW(m_currCcw, instance, sizeof(EventCCWEntry) * m_currCcw, m_etwCcwData);
-#endif //!defined(HOST_UNIX)
-    result |= EventPipeWriteEventGCBulkRootCCW(m_currCcw, instance, sizeof(EventCCWEntry) * m_currCcw, m_etwCcwData);
-
-    _ASSERTE(result == ERROR_SUCCESS);
+//#if !defined(HOST_UNIX)
+//    EVENT_DATA_DESCRIPTOR eventData[3];
+//    EventDataDescCreate(&eventData[0], &m_currCcw, sizeof(const unsigned int));
+//    EventDataDescCreate(&eventData[1], &instance, sizeof(const unsigned short));
+//    EventDataDescCreate(&eventData[2], m_etwCcwData, sizeof(EventCCWEntry) * m_currCcw);
+//
+//    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRootCCW, _countof(eventData), eventData);
+//#else
+//    ULONG result = FireEtXplatGCBulkRootCCW(m_currCcw, instance, sizeof(EventCCWEntry) * m_currCcw, m_etwCcwData);
+//#endif //!defined(HOST_UNIX)
+//    result |= EventPipeWriteEventGCBulkRootCCW(m_currCcw, instance, sizeof(EventCCWEntry) * m_currCcw, m_etwCcwData);
+//
+//    _ASSERTE(result == ERROR_SUCCESS);
 
     m_currCcw = 0;
 }
@@ -1428,23 +1428,23 @@ void BulkStaticsLogger::FireBulkStaticsEvent()
 
     _ASSERTE(m_domain != NULL);
 
-    unsigned short instance = GetClrInstanceId();
-    unsigned __int64 appDomain = (unsigned __int64)m_domain;
-
-#if !defined(HOST_UNIX)
-    EVENT_DATA_DESCRIPTOR eventData[4];
-    EventDataDescCreate(&eventData[0], &m_count, sizeof(const unsigned int)  );
-    EventDataDescCreate(&eventData[1], &appDomain, sizeof(unsigned __int64)  );
-    EventDataDescCreate(&eventData[2], &instance, sizeof(const unsigned short)  );
-    EventDataDescCreate(&eventData[3], m_buffer, m_used);
-
-    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRootStaticVar, _countof(eventData), eventData);
-#else
-    ULONG result = FireEtXplatGCBulkRootStaticVar(m_count, appDomain, instance, m_used, m_buffer);
-#endif //!defined(HOST_UNIX)
-    result |= EventPipeWriteEventGCBulkRootStaticVar(m_count, appDomain, instance, m_used, m_buffer);
-
-    _ASSERTE(result == ERROR_SUCCESS);
+//    unsigned short instance = GetClrInstanceId();
+//    unsigned __int64 appDomain = (unsigned __int64)m_domain;
+//
+//#if !defined(HOST_UNIX)
+//    EVENT_DATA_DESCRIPTOR eventData[4];
+//    EventDataDescCreate(&eventData[0], &m_count, sizeof(const unsigned int)  );
+//    EventDataDescCreate(&eventData[1], &appDomain, sizeof(unsigned __int64)  );
+//    EventDataDescCreate(&eventData[2], &instance, sizeof(const unsigned short)  );
+//    EventDataDescCreate(&eventData[3], m_buffer, m_used);
+//
+//    ULONG result = EventWrite(Microsoft_Windows_DotNETRuntimeHandle, &GCBulkRootStaticVar, _countof(eventData), eventData);
+//#else
+//    ULONG result = FireEtXplatGCBulkRootStaticVar(m_count, appDomain, instance, m_used, m_buffer);
+//#endif //!defined(HOST_UNIX)
+//    result |= EventPipeWriteEventGCBulkRootStaticVar(m_count, appDomain, instance, m_used, m_buffer);
+//
+//    _ASSERTE(result == ERROR_SUCCESS);
 
     m_used = 0;
     m_count = 0;
@@ -1705,7 +1705,7 @@ void BulkTypeEventLogger::FireBulkTypeEvent()
         }
     }
 
-    FireEtwBulkType(m_nBulkTypeValueCount, GetClrInstanceId(), iSize, m_pBulkTypeEventBuffer);
+    // FireEtwBulkType(m_nBulkTypeValueCount, GetClrInstanceId(), iSize, m_pBulkTypeEventBuffer);
 
     // Reset state
     m_nBulkTypeValueCount = 0;
@@ -2271,12 +2271,12 @@ VOID ETW::GCLog::RootReference(
         if (pContext->cGCBulkRootConditionalWeakTableElementEdges ==
             _countof(pContext->rgGCBulkRootConditionalWeakTableElementEdges))
         {
-            FireEtwGCBulkRootConditionalWeakTableElementEdge(
-                pContext->iCurBulkRootConditionalWeakTableElementEdge,
-                pContext->cGCBulkRootConditionalWeakTableElementEdges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]),
-                &pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]);
+            //FireEtwGCBulkRootConditionalWeakTableElementEdge(
+            //    pContext->iCurBulkRootConditionalWeakTableElementEdge,
+            //    pContext->cGCBulkRootConditionalWeakTableElementEdges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]),
+            //    &pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]);
 
             pContext->iCurBulkRootConditionalWeakTableElementEdge++;
             pContext->ClearRootConditionalWeakTableElementEdges();
@@ -2295,12 +2295,12 @@ VOID ETW::GCLog::RootReference(
         // If root edge buffer is now full, empty it into ETW
         if (pContext->cGcBulkRootEdges == _countof(pContext->rgGcBulkRootEdges))
         {
-            FireEtwGCBulkRootEdge(
-                pContext->iCurBulkRootEdge,
-                pContext->cGcBulkRootEdges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGcBulkRootEdges[0]),
-                &pContext->rgGcBulkRootEdges[0]);
+            //FireEtwGCBulkRootEdge(
+            //    pContext->iCurBulkRootEdge,
+            //    pContext->cGcBulkRootEdges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGcBulkRootEdges[0]),
+            //    &pContext->rgGcBulkRootEdges[0]);
 
             pContext->iCurBulkRootEdge++;
             pContext->ClearRootEdges();
@@ -2362,12 +2362,12 @@ VOID ETW::GCLog::ObjectReference(
     // If Node buffer is now full, empty it into ETW
     if (pContext->cGcBulkNodeValues == _countof(pContext->rgGcBulkNodeValues))
     {
-        FireEtwGCBulkNode(
-            pContext->iCurBulkNodeEvent,
-            pContext->cGcBulkNodeValues,
-            GetClrInstanceId(),
-            sizeof(pContext->rgGcBulkNodeValues[0]),
-            &pContext->rgGcBulkNodeValues[0]);
+        //FireEtwGCBulkNode(
+        //    pContext->iCurBulkNodeEvent,
+        //    pContext->cGcBulkNodeValues,
+        //    GetClrInstanceId(),
+        //    sizeof(pContext->rgGcBulkNodeValues[0]),
+        //    &pContext->rgGcBulkNodeValues[0]);
 
         pContext->iCurBulkNodeEvent++;
         pContext->ClearNodes();
@@ -2412,12 +2412,12 @@ VOID ETW::GCLog::ObjectReference(
         // If Edge buffer is now full, empty it into ETW
         if (pContext->cGcBulkEdgeValues == _countof(pContext->rgGcBulkEdgeValues))
         {
-            FireEtwGCBulkEdge(
-                pContext->iCurBulkEdgeEvent,
-                pContext->cGcBulkEdgeValues,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGcBulkEdgeValues[0]),
-                &pContext->rgGcBulkEdgeValues[0]);
+            //FireEtwGCBulkEdge(
+            //    pContext->iCurBulkEdgeEvent,
+            //    pContext->cGcBulkEdgeValues,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGcBulkEdgeValues[0]),
+            //    &pContext->rgGcBulkEdgeValues[0]);
 
             pContext->iCurBulkEdgeEvent++;
             pContext->ClearEdges();
@@ -2453,42 +2453,42 @@ VOID ETW::GCLog::EndHeapDump(ProfilerWalkHeapContext * profilerWalkHeapContext)
     {
         if (pContext->cGcBulkRootEdges > 0)
         {
-            FireEtwGCBulkRootEdge(
-                pContext->iCurBulkRootEdge,
-                pContext->cGcBulkRootEdges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGcBulkRootEdges[0]),
-                &pContext->rgGcBulkRootEdges[0]);
+            //FireEtwGCBulkRootEdge(
+            //    pContext->iCurBulkRootEdge,
+            //    pContext->cGcBulkRootEdges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGcBulkRootEdges[0]),
+            //    &pContext->rgGcBulkRootEdges[0]);
         }
 
         if (pContext->cGCBulkRootConditionalWeakTableElementEdges > 0)
         {
-            FireEtwGCBulkRootConditionalWeakTableElementEdge(
-                pContext->iCurBulkRootConditionalWeakTableElementEdge,
-                pContext->cGCBulkRootConditionalWeakTableElementEdges,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]),
-                &pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]);
+            //FireEtwGCBulkRootConditionalWeakTableElementEdge(
+            //    pContext->iCurBulkRootConditionalWeakTableElementEdge,
+            //    pContext->cGCBulkRootConditionalWeakTableElementEdges,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]),
+            //    &pContext->rgGCBulkRootConditionalWeakTableElementEdges[0]);
         }
 
         if (pContext->cGcBulkNodeValues > 0)
         {
-            FireEtwGCBulkNode(
-                pContext->iCurBulkNodeEvent,
-                pContext->cGcBulkNodeValues,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGcBulkNodeValues[0]),
-                &pContext->rgGcBulkNodeValues[0]);
+            //FireEtwGCBulkNode(
+            //    pContext->iCurBulkNodeEvent,
+            //    pContext->cGcBulkNodeValues,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGcBulkNodeValues[0]),
+            //    &pContext->rgGcBulkNodeValues[0]);
         }
 
         if (pContext->cGcBulkEdgeValues > 0)
         {
-            FireEtwGCBulkEdge(
-                pContext->iCurBulkEdgeEvent,
-                pContext->cGcBulkEdgeValues,
-                GetClrInstanceId(),
-                sizeof(pContext->rgGcBulkEdgeValues[0]),
-                &pContext->rgGcBulkEdgeValues[0]);
+            //FireEtwGCBulkEdge(
+            //    pContext->iCurBulkEdgeEvent,
+            //    pContext->cGcBulkEdgeValues,
+            //    GetClrInstanceId(),
+            //    sizeof(pContext->rgGcBulkEdgeValues[0]),
+            //    &pContext->rgGcBulkEdgeValues[0]);
         }
     }
 
@@ -5173,7 +5173,7 @@ VOID ETW::CodeSymbolLog::EmitCodeSymbols(Module* pModule)
                             _ASSERTE(lengthRead == maxDataSize || // Either we are in the first to (n-1)th chunk
                                 (lengthRead < maxDataSize && chunkNum + 1 == totalChunks)); // Or we are in the last chunk
 
-                            FireEtwCodeSymbols(moduleID, totalChunks, chunkNum, lengthRead, chunk, clrInstanceID);
+                            // FireEtwCodeSymbols(moduleID, totalChunks, chunkNum, lengthRead, chunk, clrInstanceID);
                             offset += lengthRead;
                         }
                     }
@@ -6409,12 +6409,12 @@ VOID ETW::MethodLog::SendMethodDetailsEvent(MethodDesc *pMethodDesc)
             typeLogger.FireBulkTypeEvent();
             // Send method event
 
-            FireEtwMethodDetails((ULONGLONG)pMethodDesc, // MethodID
-                                        typeID,  // MethodType
-                                        pMethodDesc->GetMemberDef_NoLogging(), // MethodToken
-                                        cParams,
-                                        loaderModuleID,
-                                        rgTypeParameters.OpenRawBuffer());
+            //FireEtwMethodDetails((ULONGLONG)pMethodDesc, // MethodID
+            //                            typeID,  // MethodType
+            //                            pMethodDesc->GetMemberDef_NoLogging(), // MethodToken
+            //                            cParams,
+            //                            loaderModuleID,
+            //                            rgTypeParameters.OpenRawBuffer());
 
             rgTypeParameters.CloseRawBuffer();
         }
@@ -6973,15 +6973,15 @@ VOID ETW::MethodLog::SendMethodILToNativeMapEvent(MethodDesc * pMethodDesc, DWOR
     // choosing to fire the event
     if ((dwEventOptions & ETW::EnumerationLog::EnumerationStructs::JitMethodILToNativeMap) != 0)
     {
-        FireEtwMethodILToNativeMap(
-            ullMethodIdentifier,
-            ilCodeId,
-            0,          // Extent:  This event is only sent for JITted (not NGENd) methods, and
-            //          currently there is only one extent (hot) for JITted methods.
-            cMap,
-            rguiILOffset,
-            rguiNativeOffset,
-            GetClrInstanceId());
+        //FireEtwMethodILToNativeMap(
+        //    ullMethodIdentifier,
+        //    ilCodeId,
+        //    0,          // Extent:  This event is only sent for JITted (not NGENd) methods, and
+        //    //          currently there is only one extent (hot) for JITted methods.
+        //    cMap,
+        //    rguiILOffset,
+        //    rguiNativeOffset,
+        //    GetClrInstanceId());
     }
 
     // Rundown provider
@@ -6992,10 +6992,10 @@ VOID ETW::MethodLog::SendMethodILToNativeMapEvent(MethodDesc * pMethodDesc, DWOR
     // is insufficient to distinguish these).
     //
     // (for an explanation of the parameters see the FireEtwMethodILToNativeMap call above)
-    if ((dwEventOptions & ETW::EnumerationLog::EnumerationStructs::MethodDCStartILToNativeMap) != 0)
-        FireEtwMethodDCStartILToNativeMap(ullMethodIdentifier, 0, 0, cMap, rguiILOffset, rguiNativeOffset, GetClrInstanceId());
-    if ((dwEventOptions & ETW::EnumerationLog::EnumerationStructs::MethodDCEndILToNativeMap) != 0)
-        FireEtwMethodDCEndILToNativeMap(ullMethodIdentifier, 0, 0, cMap, rguiILOffset, rguiNativeOffset, GetClrInstanceId());
+    //if ((dwEventOptions & ETW::EnumerationLog::EnumerationStructs::MethodDCStartILToNativeMap) != 0)
+    //    FireEtwMethodDCStartILToNativeMap(ullMethodIdentifier, 0, 0, cMap, rguiILOffset, rguiNativeOffset, GetClrInstanceId());
+    //if ((dwEventOptions & ETW::EnumerationLog::EnumerationStructs::MethodDCEndILToNativeMap) != 0)
+    //    FireEtwMethodDCEndILToNativeMap(ullMethodIdentifier, 0, 0, cMap, rguiILOffset, rguiNativeOffset, GetClrInstanceId());
 }
 
 

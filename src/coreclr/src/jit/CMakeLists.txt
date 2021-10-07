@@ -349,8 +349,7 @@ if(CLR_CMAKE_HOST_UNIX)
     )
 else()
     list(APPEND JIT_LINK_LIBRARIES
-       ${STATIC_MT_CRT_LIB}
-       ${STATIC_MT_VCRT_LIB}
+       ${STATIC_MD_CRT_LIB}
        kernel32.lib
        advapi32.lib
        ole32.lib
@@ -362,6 +361,7 @@ else()
        bcrypt.lib
        crypt32.lib
        RuntimeObject.lib
+       ntdll.lib
     )
 endif(CLR_CMAKE_HOST_UNIX)
 

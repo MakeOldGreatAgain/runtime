@@ -654,11 +654,11 @@ HRESULT MulticoreJitModuleEnumerator::EnumerateLoadedModules(AppDomain * pDomain
 // static: single instace within a process
 
 #ifndef TARGET_UNIX
-TP_TIMER * MulticoreJitRecorder::s_delayedWriteTimer; // = NULL;
+HANDLE MulticoreJitRecorder::s_delayedWriteTimer; // = NULL;
 
 // static
 void CALLBACK
-MulticoreJitRecorder::WriteMulticoreJitProfiler(PTP_CALLBACK_INSTANCE pInstance, PVOID pvContext, PTP_TIMER pTimer)
+MulticoreJitRecorder::WriteMulticoreJitProfiler(PVOID pvContext, BOOLEAN TimerOrWaitFired)
 {
     CONTRACTL
     {
@@ -705,23 +705,15 @@ void MulticoreJitRecorder::PreRecordFirstMethod()
         int profileWriteTimeout = (int)CLRConfig::GetConfigValue(CLRConfig::INTERNAL_MultiCoreJitProfileWriteDelay);
 
 #ifndef TARGET_UNIX
+
+        // CreateTimerQueueTimer needs delay to be given in ms unit
+        DWORD DueTime = profileWriteTimeout * 1000;
+
+        // This will either set the timer to happen in profileWriteTimeout seconds, or reset the timer so the same will happen.
+        // This function is safe to call
+        
         // Using the same threadpool timer used by UsageLog to write out profile when running under Appx or CoreCLR.
-        s_delayedWriteTimer = CreateThreadpoolTimer(WriteMulticoreJitProfiler, this, NULL);
-
-        if (s_delayedWriteTimer != NULL)
-        {
-            ULARGE_INTEGER msDelay;
-
-            // SetThreadpoolTimer needs delay to be given in 100 ns unit, negative
-            msDelay.QuadPart = (ULONGLONG) -(profileWriteTimeout * 10 * 1000 * 1000);
-            FILETIME ftDueTime;
-            ftDueTime.dwLowDateTime = msDelay.u.LowPart;
-            ftDueTime.dwHighDateTime = msDelay.u.HighPart;
-
-            // This will either set the timer to happen in profileWriteTimeout seconds, or reset the timer so the same will happen.
-            // This function is safe to call
-            SetThreadpoolTimer(s_delayedWriteTimer, &ftDueTime, 0, 2000 /* large 2000 ms window for executing this timer is acceptable as the timing here is very much not critical */);
-        }
+        CreateTimerQueueTimer(&s_delayedWriteTimer, NULL, WriteMulticoreJitProfiler, this, DueTime, 0, 0);
 #endif // !TARGET_UNIX
     }
 }

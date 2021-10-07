@@ -77,8 +77,7 @@ set(ILDASM_LINK_LIBRARIES
 
 if(CLR_CMAKE_HOST_WIN32)
     list(APPEND ILDASM_LINK_LIBRARIES
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
+        ${STATIC_MD_CRT_LIB}
         kernel32.lib
         advapi32.lib
         ole32.lib
@@ -89,6 +88,7 @@ if(CLR_CMAKE_HOST_WIN32)
         shlwapi.lib
         bcrypt.lib
         RuntimeObject.lib
+        ntdll.lib
     )
 else()
     list(APPEND ILDASM_LINK_LIBRARIES

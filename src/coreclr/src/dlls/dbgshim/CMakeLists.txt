@@ -56,8 +56,7 @@ set(DBGSHIM_LIBRARIES
 if(CLR_CMAKE_HOST_WIN32)
     list(APPEND DBGSHIM_LIBRARIES
         kernel32.lib
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
+        ${STATIC_MD_CRT_LIB}
         uuid.lib
         user32.lib
         advapi32.lib
@@ -66,6 +65,7 @@ if(CLR_CMAKE_HOST_WIN32)
         WtsApi32.lib
         version.lib
         psapi.lib
+        ntdll.lib
     )
 else()
     list(APPEND DBGSHIM_LIBRARIES

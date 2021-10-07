@@ -70,8 +70,8 @@ else()
         version
         shlwapi
         bcrypt
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
+        ntdll
+        ${STATIC_MD_CRT_LIB}
     )
 
 endif(CLR_CMAKE_HOST_UNIX)

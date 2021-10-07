@@ -25,11 +25,12 @@ if(CLR_CMAKE_HOST_WIN32)
 
     target_link_libraries(createdump
         kernel32.lib
-        ${STATIC_MT_CRT_LIB}
+        ${STATIC_MD_CRT_LIB}
         advapi32.lib
         version.lib
         dbghelp.lib
         ws2_32.lib
+        Psapi.lib
     )
 
 else(CLR_CMAKE_HOST_WIN32)

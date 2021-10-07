@@ -19,6 +19,9 @@
 #include "utilcode.h"
 #include "holder.h"
 #include "pedecoder.h"
+//#define _NO_NTDLL_CRT_
+//#include <winnt.h>
+//#include <ntdll.h>
 
 
 // ====== READ BEFORE ADDING CONTRACTS ==================================================
@@ -49,57 +52,57 @@ static BOOL gWinWrapperContractRecursionBreak = FALSE;
 
 class WinWrapperContract
 {
-    public:
-        WinWrapperContract(const char *szFunction, const char *szFile, int lineNum)
+public:
+    WinWrapperContract(const char* szFunction, const char* szFile, int lineNum)
+    {
+        CANNOT_HAVE_CONTRACT;
+
+        m_pClrDebugState = NULL;
+
+        if (gWinWrapperContractRecursionBreak)
         {
-            CANNOT_HAVE_CONTRACT;
-
-            m_pClrDebugState = NULL;
-
-            if (gWinWrapperContractRecursionBreak)
-            {
-                return;
-            }
-
-            m_pClrDebugState = GetClrDebugState();
-
-            // Save old debug state
-            m_IncomingClrDebugState = *m_pClrDebugState;
-
-
-            m_pClrDebugState->ViolationMaskReset( ThrowsViolation );
-
-            if (m_pClrDebugState->IsFaultForbid() && !(m_pClrDebugState->ViolationMask() & (FaultViolation|FaultNotFatal|BadDebugState)))
-            {
-                gWinWrapperContractRecursionBreak = TRUE;
-
-                CONTRACT_ASSERT("INJECT_FAULT called in a FAULTFORBID region.",
-                                Contract::FAULT_Forbid,
-                                Contract::FAULT_Mask,
-                                szFunction,
-                                szFile,
-                                lineNum
-                                );
-            }
-
-
-        };
-
-        ~WinWrapperContract()
-        {
-            CANNOT_HAVE_CONTRACT;
-
-            //!!!!!! THIS DESTRUCTOR MUST NOT CHANGE THE GETLASTERROR VALUE !!!!!!
-
-            // Backout all changes to debug state.
-            if (m_pClrDebugState != NULL)
-            {
-                *m_pClrDebugState = m_IncomingClrDebugState;
-            }
+            return;
         }
-    private:
-        ClrDebugState *m_pClrDebugState;
-        ClrDebugState  m_IncomingClrDebugState;
+
+        m_pClrDebugState = GetClrDebugState();
+
+        // Save old debug state
+        m_IncomingClrDebugState = *m_pClrDebugState;
+
+
+        m_pClrDebugState->ViolationMaskReset(ThrowsViolation);
+
+        if (m_pClrDebugState->IsFaultForbid() && !(m_pClrDebugState->ViolationMask() & (FaultViolation | FaultNotFatal | BadDebugState)))
+        {
+            gWinWrapperContractRecursionBreak = TRUE;
+
+            CONTRACT_ASSERT("INJECT_FAULT called in a FAULTFORBID region.",
+                Contract::FAULT_Forbid,
+                Contract::FAULT_Mask,
+                szFunction,
+                szFile,
+                lineNum
+            );
+        }
+
+
+    };
+
+    ~WinWrapperContract()
+    {
+        CANNOT_HAVE_CONTRACT;
+
+        //!!!!!! THIS DESTRUCTOR MUST NOT CHANGE THE GETLASTERROR VALUE !!!!!!
+
+        // Backout all changes to debug state.
+        if (m_pClrDebugState != NULL)
+        {
+            *m_pClrDebugState = m_IncomingClrDebugState;
+        }
+    }
+private:
+    ClrDebugState* m_pClrDebugState;
+    ClrDebugState  m_IncomingClrDebugState;
 
 };
 
@@ -144,7 +147,7 @@ WszCreateProcess(
     LPCWSTR lpCurrentDirectory,
     LPSTARTUPINFOW lpStartupInfo,
     LPPROCESS_INFORMATION lpProcessInformation
-    )
+)
 {
     WINWRAPPER_NO_CONTRACT(SetLastError(ERROR_OUTOFMEMORY); return 0;);
 
@@ -162,15 +165,15 @@ WszCreateProcess(
         memcpy(nonConstCommandLine, lpCommandLine, commandLineLength * sizeof(WCHAR));
 
         fResult = CreateProcessW(lpApplicationName,
-                                   nonConstCommandLine,
-                                   lpProcessAttributes,
-                                   lpThreadAttributes,
-                                   bInheritHandles,
-                                   dwCreationFlags,
-                                   lpEnvironment,
-                                   (LPWSTR)lpCurrentDirectory,
-                                   lpStartupInfo,
-                                   lpProcessInformation);
+            nonConstCommandLine,
+            lpProcessAttributes,
+            lpThreadAttributes,
+            bInheritHandles,
+            dwCreationFlags,
+            lpEnvironment,
+            (LPWSTR)lpCurrentDirectory,
+            lpStartupInfo,
+            lpProcessInformation);
 
         // At the end of the current scope, the last error code will be overwritten by the destructor of
         // NewArrayHolder. So we save the error code here, and restore it after the end of the current scope.
@@ -229,19 +232,19 @@ BOOL RunningInteractive()
         return fInteractive != 0;
 
 #if !defined(FEATURE_CORESYSTEM)
-        HWINSTA hwinsta = NULL;
+    HWINSTA hwinsta = NULL;
 
-        if ((hwinsta = GetProcessWindowStation() ) != NULL)
+    if ((hwinsta = GetProcessWindowStation()) != NULL)
+    {
+        DWORD lengthNeeded;
+        USEROBJECTFLAGS flags;
+
+        if (GetUserObjectInformationW(hwinsta, UOI_FLAGS, &flags, sizeof(flags), &lengthNeeded))
         {
-            DWORD lengthNeeded;
-            USEROBJECTFLAGS flags;
-
-            if (GetUserObjectInformationW (hwinsta, UOI_FLAGS, &flags, sizeof(flags), &lengthNeeded))
-           {
-                    if ((flags.dwFlags & WSF_VISIBLE) == 0)
-                        fInteractive = 0;
-            }
+            if ((flags.dwFlags & WSF_VISIBLE) == 0)
+                fInteractive = 0;
         }
+    }
 #endif // !FEATURE_CORESYSTEM
 
     if (fInteractive != 0)
@@ -250,7 +253,7 @@ BOOL RunningInteractive()
     return fInteractive != 0;
 }
 
-typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE hThread, PCWSTR lpThreadDescription);
+typedef HRESULT(WINAPI* pfnSetThreadDescription)(HANDLE hThread, PCWSTR lpThreadDescription);
 extern pfnSetThreadDescription g_pfnSetThreadDescription;
 
 // Dummy method if windows version does not support it

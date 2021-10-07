@@ -36,6 +36,7 @@
 
 #include "registrywrapper.h"
 #include "longfilepathwrappers.h"
+#include "winxpwrap.h"
 
 #if defined(_PREFAST_) || defined(SOURCE_FORMATTING)
 //
@@ -196,7 +197,7 @@
 
 // CoreSystem has CreateSemaphoreExW but not CreateSemaphoreW.
 #undef WszCreateSemaphore
-#define WszCreateSemaphore(_secattr, _count, _maxcount, _name) CreateSemaphoreExW((_secattr), (_count), (_maxcount), (_name), 0, MAXIMUM_ALLOWED | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE)
+#define WszCreateSemaphore(_secattr, _count, _maxcount, _name) CreateSemaphoreW((_secattr), (_count), (_maxcount), (_name))
 
 // Same deal as above for GetFileVersionInfo/GetFileVersionInfoSize.
 #undef GetFileVersionInfo
@@ -506,5 +507,4 @@ inline int LateboundMessageBoxA(HWND hWnd,
 #define MessageBoxA LateboundMessageBoxA
 
 #endif // FEATURE_CORESYSTEM
-
 #endif  // __WIN_WRAP_H__

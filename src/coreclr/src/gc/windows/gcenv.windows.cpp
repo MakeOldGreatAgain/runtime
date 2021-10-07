@@ -7,6 +7,7 @@
 #include <memory>
 #include "windows.h"
 #include "psapi.h"
+#include "../inc/winxpwrap.h"
 #include "env/gcenv.structs.h"
 #include "env/gcenv.base.h"
 #include "env/gcenv.os.h"

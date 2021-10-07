@@ -2105,7 +2105,12 @@ static HRESULT GetThreadUICultureNames(__inout StringArrayList* pCultureNames)
             int tmp; tmp = GetThreadUICultureId(&id);   // TODO: We should use the name instead
             _ASSERTE(tmp!=0 && id != UICULTUREID_DONTCARE);
             SIZE_T cchParentCultureName=LOCALE_NAME_MAX_LENGTH;
-            sCulture.Set(id);
+            SIZE_T cchCultureName = LOCALE_NAME_MAX_LENGTH;
+            if (!::LCIDToLocaleName(id, sCulture.OpenUnicodeBuffer(static_cast<COUNT_T>(cchCultureName)), static_cast<int>(cchCultureName), 0))
+            {
+                hr = HRESULT_FROM_GetLastError();
+            }
+            sCulture.CloseBuffer();
 
 #ifndef TARGET_UNIX
             if (!::GetLocaleInfoEx((LPCWSTR)sCulture, LOCALE_SPARENT, sParentCulture.OpenUnicodeBuffer(static_cast<COUNT_T>(cchParentCultureName)),static_cast<int>(cchParentCultureName)))
@@ -2171,9 +2176,7 @@ static int GetThreadUICultureId(__out LocaleIDValue* pLocale)
         MODE_ANY;
     } CONTRACTL_END;
 
-    _ASSERTE(sizeof(LocaleIDValue)/sizeof(WCHAR) >= LOCALE_NAME_MAX_LENGTH);
-
-    int Result = 0;
+    int Result = UICULTUREID_DONTCARE;
 
     Thread * pThread = GetThread();
 
@@ -2220,21 +2223,24 @@ static int GetThreadUICultureId(__out LocaleIDValue* pLocale)
         }
     }
 #endif
-    if (Result == 0)
+    if (Result == (int)UICULTUREID_DONTCARE)
     {
-#ifndef TARGET_UNIX
         // This thread isn't set up to use a non-default culture. Let's grab the default
         // one and return that.
 
-        Result = ::GetUserDefaultLocaleName(*pLocale, LOCALE_NAME_MAX_LENGTH);
+        Result = GetUserDefaultUILanguage();
+
+        if (Result == 0 || Result == (int)UICULTUREID_DONTCARE)
+            Result = GetUserDefaultLangID();
 
         _ASSERTE(Result != 0);
-#else // !TARGET_UNIX
-        static const WCHAR enUS[] = W("en-US");
-        memcpy(*pLocale, enUS, sizeof(enUS));
-        Result = sizeof(enUS);
-#endif // !TARGET_UNIX
+        if (Result == 0)
+        {
+            Result = (int)UICULTUREID_DONTCARE;
+        }
     }
+
+    *pLocale = Result;
     return Result;
 }
 

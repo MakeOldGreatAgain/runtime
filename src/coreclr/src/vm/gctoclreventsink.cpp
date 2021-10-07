@@ -19,7 +19,7 @@ void GCToCLREventSink::FireDynamicEvent(const char* eventName, void* payload, ui
         return;
     }
 
-    FireEtwGCDynamicEvent(wideEventName, payloadSize, (const BYTE*)payload, GetClrInstanceId());
+    // FireEtwGCDynamicEvent(wideEventName, payloadSize, (const BYTE*)payload, GetClrInstanceId());
 }
 
 void GCToCLREventSink::FireGCStart_V2(uint32_t count, uint32_t depth, uint32_t reason, uint32_t type)
@@ -234,23 +234,23 @@ void GCToCLREventSink::FireGCPerHeapHistory_V3(void *freeListAllocated,
                                                uint32_t valuesLen,
                                                void *values)
 {
-    FireEtwGCPerHeapHistory_V3(GetClrInstanceId(),
-                               freeListAllocated,
-                               freeListRejected,
-                               endOfSegAllocated,
-                               condemnedAllocated,
-                               pinnedAllocated,
-                               pinnedAllocatedAdvance,
-                               runningFreeListEfficiency,
-                               condemnReasons0,
-                               condemnReasons1,
-                               compactMechanisms,
-                               expandMechanisms,
-                               heapIndex,
-                               extraGen0Commit,
-                               count,
-                               valuesLen,
-                               values);
+    //FireEtwGCPerHeapHistory_V3(GetClrInstanceId(),
+    //                           freeListAllocated,
+    //                           freeListRejected,
+    //                           endOfSegAllocated,
+    //                           condemnedAllocated,
+    //                           pinnedAllocated,
+    //                           pinnedAllocatedAdvance,
+    //                           runningFreeListEfficiency,
+    //                           condemnReasons0,
+    //                           condemnReasons1,
+    //                           compactMechanisms,
+    //                           expandMechanisms,
+    //                           heapIndex,
+    //                           extraGen0Commit,
+    //                           count,
+    //                           valuesLen,
+    //                           values);
 }
 
 

@@ -348,7 +348,7 @@ private:
     bool                      m_fAppxMode;
 
 #ifndef TARGET_UNIX
-    static TP_TIMER         * s_delayedWriteTimer;
+    static HANDLE             s_delayedWriteTimer;
 #endif // !TARGET_UNIX
 
 
@@ -368,7 +368,7 @@ private:
     void PreRecordFirstMethod();
 
 #ifndef TARGET_UNIX
-    static void CALLBACK WriteMulticoreJitProfiler(PTP_CALLBACK_INSTANCE pInstance, PVOID pvContext, PTP_TIMER pTimer);
+    static void CALLBACK WriteMulticoreJitProfiler(PVOID pvContext, BOOLEAN TimerOrWaitFired);
 #endif // !TARGET_UNIX
 
 public:
@@ -397,14 +397,14 @@ public:
     {
         LIMITED_METHOD_CONTRACT;
 
-        TP_TIMER * pTimer = InterlockedExchangeT(& s_delayedWriteTimer, NULL);
+        HANDLE pTimer = InterlockedExchangeT(& s_delayedWriteTimer, NULL);
 
         if (pTimer == NULL)
         {
             return false;
         }
 
-        CloseThreadpoolTimer(pTimer);
+        DeleteTimerQueueTimer(NULL, pTimer, NULL);
 
         return true;
     }

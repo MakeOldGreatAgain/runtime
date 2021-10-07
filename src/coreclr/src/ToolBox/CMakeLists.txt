@@ -1,2 +1,2 @@
 add_subdirectory(SOS)
-add_subdirectory(superpmi)
+#add_subdirectory(superpmi)
