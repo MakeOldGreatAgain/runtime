@@ -107,6 +107,47 @@ int WINAPI LCMapStringEx(
     LPARAM           sortHandle
 );
 
+int
+WINAPI
+FindNLSString(
+    _In_                    LCID Locale,
+    _In_                    DWORD dwFindNLSStringFlags,
+    _In_reads_(cchSource)   LPCWSTR lpStringSource,
+    _In_                    int cchSource,
+    _In_reads_(cchValue)    LPCWSTR lpStringValue,
+    _In_                    int cchValue,
+    _Out_opt_               LPINT pcchFound);
+
+int
+WINAPI
+CompareStringOrdinal(
+    _In_NLS_string_(cchCount1) LPCWCH lpString1,
+    _In_ int cchCount1,
+    _In_NLS_string_(cchCount2) LPCWCH lpString2,
+    _In_ int cchCount2,
+    _In_ BOOL bIgnoreCase
+);
+
+int
+WINAPI
+FindStringOrdinal(
+    _In_ DWORD dwFindStringOrdinalFlags,
+    _In_reads_(cchSource) LPCWSTR lpStringSource,
+    _In_ int cchSource,
+    _In_reads_(cchValue) LPCWSTR lpStringValue,
+    _In_ int cchValue,
+    _In_ BOOL bIgnoreCase
+);
+
+BOOL
+WINAPI
+IsNLSDefinedString(
+    _In_ NLS_FUNCTION     Function,
+    _In_ DWORD            dwFlags,
+    _In_ LPNLSVERSIONINFO lpVersionInformation,
+    _In_reads_(cchStr) LPCWSTR          lpString,
+    _In_ INT              cchStr);
+
 #define STATUS_FAIL_FAST_EXCEPTION 0xC0000602
 
 #define RaiseFailFastException RaiseFailFastExceptionXP

@@ -28,11 +28,11 @@ namespace System.Globalization
         private string? _listSeparator;
         private bool _isReadOnly;
 
-        private readonly string _cultureName;
+        private readonly int _culture;
         private readonly CultureData _cultureData;
 
         // // Name of the text info we're using (ie: _cultureData.TextInfoName)
-        private readonly string _textInfoName;
+        private readonly int _textInfoId;
 
         private Tristate _isAsciiCasingSameAsInvariant = Tristate.NotInitialized;
 
@@ -43,13 +43,8 @@ namespace System.Globalization
         {
             // This is our primary data source, we don't need most of the rest of this
             _cultureData = cultureData;
-            _cultureName = _cultureData.CultureName;
-            _textInfoName = _cultureData.TextInfoName;
-
-            if (GlobalizationMode.UseNls)
-            {
-                _sortHandle = CompareInfo.NlsGetSortHandle(_textInfoName);
-            }
+            _culture = _cultureData.LCID;
+            _textInfoId = _cultureData.TextInfoId;
         }
 
         private TextInfo(CultureData cultureData, bool readOnly)
@@ -72,9 +67,9 @@ namespace System.Globalization
         public int EBCDICCodePage => _cultureData.EBCDICCodePage;
 
         // Just use the LCID from our text info name
-        public int LCID => CultureInfo.GetCultureInfo(_textInfoName).LCID;
+        public int LCID => _cultureData.LCID;
 
-        public string CultureName => _textInfoName;
+        public string CultureName => CultureInfo.NlsLCIDToLocalName(_textInfoId);
 
         public bool IsReadOnly => _isReadOnly;
 
@@ -608,7 +603,7 @@ namespace System.Globalization
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void PopulateIsAsciiCasingSameAsInvariant()
         {
-            bool compareResult = CultureInfo.GetCultureInfo(_textInfoName).CompareInfo.Compare("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", CompareOptions.IgnoreCase) == 0;
+            bool compareResult = CultureInfo.GetCultureInfo(_textInfoId).CompareInfo.Compare("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", CompareOptions.IgnoreCase) == 0;
             _isAsciiCasingSameAsInvariant = (compareResult) ? Tristate.True : Tristate.False;
         }
 
@@ -628,7 +623,7 @@ namespace System.Globalization
 
         public override string ToString()
         {
-            return "TextInfo - " + _cultureData.CultureName;
+            return "TextInfo - " + CultureInfo.NlsLCIDToLocalName(_cultureData.LCID);
         }
 
         /// <summary>
@@ -833,14 +828,7 @@ namespace System.Globalization
 
         private unsafe void ChangeCaseCore(char* src, int srcLen, char* dstBuffer, int dstBufferCapacity, bool bToUpper)
         {
-            if (GlobalizationMode.UseNls)
-            {
-                NlsChangeCase(src, srcLen, dstBuffer, dstBufferCapacity, bToUpper);
-            }
-            else
-            {
-                IcuChangeCase(src, srcLen, dstBuffer, dstBufferCapacity, bToUpper);
-            }
+            NlsChangeCase(src, srcLen, dstBuffer, dstBufferCapacity, bToUpper);
         }
 
         // Used in ToTitleCase():

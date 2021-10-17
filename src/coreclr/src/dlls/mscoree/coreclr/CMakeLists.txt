@@ -128,6 +128,7 @@ if(CLR_CMAKE_TARGET_WIN32)
         RuntimeObject.lib
         Psapi.lib
         ntdll.lib
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 else()
     list(APPEND CORECLR_LIBRARIES

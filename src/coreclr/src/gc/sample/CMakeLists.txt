@@ -52,6 +52,7 @@ if(CLR_CMAKE_TARGET_WIN32)
     user32.lib
     version.lib
     ntdll.lib
+    ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 endif(CLR_CMAKE_TARGET_WIN32)
 

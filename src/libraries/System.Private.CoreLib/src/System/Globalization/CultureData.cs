@@ -43,16 +43,15 @@ namespace System.Globalization
         private const int undef = -1;
 
         // Override flag
-        private string _sRealName = null!; // Name you passed in (ie: en-US, en, or de-DE_phoneb). Initialized by helper called during initialization.
-        private string? _sWindowsName; // Name OS thinks the object is (ie: de-DE_phoneb, or en-US (even if en was passed in))
 
         // Identity
-        private string? _sName; // locale name (ie: en-us, NO sort info, but could be neutral)
-        private string? _sParent; // Parent name (which may be a custom locale/culture)
+        private int _iLcid; // Name OS thinks the object is (ie: de-DE_phoneb, or en-US (even if en was passed in))
+        private int _iLanguage; // locale ID (0409) - NO sort information
+        private int? _iParent; // Parent name (which may be a custom locale/culture)
         private string? _sLocalizedDisplayName; // Localized pretty name for this locale
         private string? _sEnglishDisplayName; // English pretty name for this locale
         private string? _sNativeDisplayName; // Native pretty name for this locale
-        private string? _sSpecificCulture; // The culture name to be used in CultureInfo.CreateSpecificCulture(), en-US form if neutral, sort name if sort
+        private int? _iSpecificCulture; // The culture name to be used in CultureInfo.CreateSpecificCulture(), en-US form if neutral, sort name if sort
 
         // Language
         private string? _sISO639Language; // ISO 639 Language Name
@@ -139,292 +138,20 @@ namespace System.Globalization
         private int _iDefaultMacCodePage = undef; // default macintosh code page
         private int _iDefaultEbcdicCodePage = undef; // default EBCDIC code page
 
-        private int _iLanguage; // locale ID (0409) - NO sort information
         private bool _bUseOverrides; // use user overrides? this depends on user setting and if is user default locale.
         private bool _bUseOverridesUserSetting; // the setting the user requested for.
         private bool _bNeutral; // Flags for the culture (ie: neutral or not right now)
 
-        /// <summary>
-        /// Region Name to Culture Name mapping table
-        /// </summary>
-        /// <remarks>
-        /// Using a property so we avoid creating the dictionary until we need it
-        /// </remarks>
-        private static Dictionary<string, string> RegionNames =>
-            s_regionNames ??=
-            new Dictionary<string, string>(257 /* prime */, StringComparer.OrdinalIgnoreCase)
-            {
-                { "001", "en-001" },
-                { "029", "en-029" },
-                { "150", "en-150" },
-                { "419", "es-419" },
-                { "AD", "ca-AD" },
-                { "AE", "ar-AE" },
-                { "AF", "prs-AF" },
-                { "AG", "en-AG" },
-                { "AI", "en-AI" },
-                { "AL", "sq-AL" },
-                { "AM", "hy-AM" },
-                { "AO", "pt-AO" },
-                { "AQ", "en-A" },
-                { "AR", "es-AR" },
-                { "AS", "en-AS" },
-                { "AT", "de-AT" },
-                { "AU", "en-AU" },
-                { "AW", "nl-AW" },
-                { "AX", "sv-AX" },
-                { "AZ", "az-Cyrl-AZ" },
-                { "BA", "bs-Latn-BA" },
-                { "BB", "en-BB" },
-                { "BD", "bn-BD" },
-                { "BE", "nl-BE" },
-                { "BF", "fr-BF" },
-                { "BG", "bg-BG" },
-                { "BH", "ar-BH" },
-                { "BI", "rn-BI" },
-                { "BJ", "fr-BJ" },
-                { "BL", "fr-BL" },
-                { "BM", "en-BM" },
-                { "BN", "ms-BN" },
-                { "BO", "es-BO" },
-                { "BQ", "nl-BQ" },
-                { "BR", "pt-BR" },
-                { "BS", "en-BS" },
-                { "BT", "dz-BT" },
-                { "BV", "nb-B" },
-                { "BW", "en-BW" },
-                { "BY", "be-BY" },
-                { "BZ", "en-BZ" },
-                { "CA", "en-CA" },
-                { "CC", "en-CC" },
-                { "CD", "fr-CD" },
-                { "CF", "sg-CF" },
-                { "CG", "fr-CG" },
-                { "CH", "it-CH" },
-                { "CI", "fr-CI" },
-                { "CK", "en-CK" },
-                { "CL", "es-CL" },
-                { "CM", "fr-C" },
-                { "CN", "zh-CN" },
-                { "CO", "es-CO" },
-                { "CR", "es-CR" },
-                { "CS", "sr-Cyrl-CS" },
-                { "CU", "es-CU" },
-                { "CV", "pt-CV" },
-                { "CW", "nl-CW" },
-                { "CX", "en-CX" },
-                { "CY", "el-CY" },
-                { "CZ", "cs-CZ" },
-                { "DE", "de-DE" },
-                { "DJ", "fr-DJ" },
-                { "DK", "da-DK" },
-                { "DM", "en-DM" },
-                { "DO", "es-DO" },
-                { "DZ", "ar-DZ" },
-                { "EC", "es-EC" },
-                { "EE", "et-EE" },
-                { "EG", "ar-EG" },
-                { "ER", "tig-ER" },
-                { "ES", "es-ES" },
-                { "ET", "am-ET" },
-                { "FI", "fi-FI" },
-                { "FJ", "en-FJ" },
-                { "FK", "en-FK" },
-                { "FM", "en-FM" },
-                { "FO", "fo-FO" },
-                { "FR", "fr-FR" },
-                { "GA", "fr-GA" },
-                { "GB", "en-GB" },
-                { "GD", "en-GD" },
-                { "GE", "ka-GE" },
-                { "GF", "fr-GF" },
-                { "GG", "en-GG" },
-                { "GH", "en-GH" },
-                { "GI", "en-GI" },
-                { "GL", "kl-GL" },
-                { "GM", "en-GM" },
-                { "GN", "fr-GN" },
-                { "GP", "fr-GP" },
-                { "GQ", "es-GQ" },
-                { "GR", "el-GR" },
-                { "GS", "en-G" },
-                { "GT", "es-GT" },
-                { "GU", "en-GU" },
-                { "GW", "pt-GW" },
-                { "GY", "en-GY" },
-                { "HK", "zh-HK" },
-                { "HM", "en-H" },
-                { "HN", "es-HN" },
-                { "HR", "hr-HR" },
-                { "HT", "fr-HT" },
-                { "HU", "hu-HU" },
-                { "ID", "id-ID" },
-                { "IE", "en-IE" },
-                { "IL", "he-IL" },
-                { "IM", "gv-IM" },
-                { "IN", "hi-IN" },
-                { "IO", "en-IO" },
-                { "IQ", "ar-IQ" },
-                { "IR", "fa-IR" },
-                { "IS", "is-IS" },
-                { "IT", "it-IT" },
-                { "IV", "" },
-                { "JE", "en-JE" },
-                { "JM", "en-JM" },
-                { "JO", "ar-JO" },
-                { "JP", "ja-JP" },
-                { "KE", "sw-KE" },
-                { "KG", "ky-KG" },
-                { "KH", "km-KH" },
-                { "KI", "en-KI" },
-                { "KM", "ar-KM" },
-                { "KN", "en-KN" },
-                { "KP", "ko-KP" },
-                { "KR", "ko-KR" },
-                { "KW", "ar-KW" },
-                { "KY", "en-KY" },
-                { "KZ", "kk-KZ" },
-                { "LA", "lo-LA" },
-                { "LB", "ar-LB" },
-                { "LC", "en-LC" },
-                { "LI", "de-LI" },
-                { "LK", "si-LK" },
-                { "LR", "en-LR" },
-                { "LS", "st-LS" },
-                { "LT", "lt-LT" },
-                { "LU", "lb-LU" },
-                { "LV", "lv-LV" },
-                { "LY", "ar-LY" },
-                { "MA", "ar-MA" },
-                { "MC", "fr-MC" },
-                { "MD", "ro-MD" },
-                { "ME", "sr-Latn-ME" },
-                { "MF", "fr-MF" },
-                { "MG", "mg-MG" },
-                { "MH", "en-MH" },
-                { "MK", "mk-MK" },
-                { "ML", "fr-ML" },
-                { "MM", "my-MM" },
-                { "MN", "mn-MN" },
-                { "MO", "zh-MO" },
-                { "MP", "en-MP" },
-                { "MQ", "fr-MQ" },
-                { "MR", "ar-MR" },
-                { "MS", "en-MS" },
-                { "MT", "mt-MT" },
-                { "MU", "en-MU" },
-                { "MV", "dv-MV" },
-                { "MW", "en-MW" },
-                { "MX", "es-MX" },
-                { "MY", "ms-MY" },
-                { "MZ", "pt-MZ" },
-                { "NA", "en-NA" },
-                { "NC", "fr-NC" },
-                { "NE", "fr-NE" },
-                { "NF", "en-NF" },
-                { "NG", "ig-NG" },
-                { "NI", "es-NI" },
-                { "NL", "nl-NL" },
-                { "NO", "nn-NO" },
-                { "NP", "ne-NP" },
-                { "NR", "en-NR" },
-                { "NU", "en-NU" },
-                { "NZ", "en-NZ" },
-                { "OM", "ar-OM" },
-                { "PA", "es-PA" },
-                { "PE", "es-PE" },
-                { "PF", "fr-PF" },
-                { "PG", "en-PG" },
-                { "PH", "en-PH" },
-                { "PK", "ur-PK" },
-                { "PL", "pl-PL" },
-                { "PM", "fr-PM" },
-                { "PN", "en-PN" },
-                { "PR", "es-PR" },
-                { "PS", "ar-PS" },
-                { "PT", "pt-PT" },
-                { "PW", "en-PW" },
-                { "PY", "es-PY" },
-                { "QA", "ar-QA" },
-                { "RE", "fr-RE" },
-                { "RO", "ro-RO" },
-                { "RS", "sr-Latn-RS" },
-                { "RU", "ru-RU" },
-                { "RW", "rw-RW" },
-                { "SA", "ar-SA" },
-                { "SB", "en-SB" },
-                { "SC", "fr-SC" },
-                { "SD", "ar-SD" },
-                { "SE", "sv-SE" },
-                { "SG", "zh-SG" },
-                { "SH", "en-SH" },
-                { "SI", "sl-SI" },
-                { "SJ", "nb-SJ" },
-                { "SK", "sk-SK" },
-                { "SL", "en-SL" },
-                { "SM", "it-SM" },
-                { "SN", "wo-SN" },
-                { "SO", "so-SO" },
-                { "SR", "nl-SR" },
-                { "SS", "en-SS" },
-                { "ST", "pt-ST" },
-                { "SV", "es-SV" },
-                { "SX", "nl-SX" },
-                { "SY", "ar-SY" },
-                { "SZ", "ss-SZ" },
-                { "TC", "en-TC" },
-                { "TD", "fr-TD" },
-                { "TF", "fr-T" },
-                { "TG", "fr-TG" },
-                { "TH", "th-TH" },
-                { "TJ", "tg-Cyrl-TJ" },
-                { "TK", "en-TK" },
-                { "TL", "pt-TL" },
-                { "TM", "tk-TM" },
-                { "TN", "ar-TN" },
-                { "TO", "to-TO" },
-                { "TR", "tr-TR" },
-                { "TT", "en-TT" },
-                { "TV", "en-TV" },
-                { "TW", "zh-TW" },
-                { "TZ", "sw-TZ" },
-                { "UA", "uk-UA" },
-                { "UG", "sw-UG" },
-                { "UM", "en-UM" },
-                { "US", "en-US" },
-                { "UY", "es-UY" },
-                { "UZ", "uz-Cyrl-UZ" },
-                { "VA", "it-VA" },
-                { "VC", "en-VC" },
-                { "VE", "es-VE" },
-                { "VG", "en-VG" },
-                { "VI", "en-VI" },
-                { "VN", "vi-VN" },
-                { "VU", "fr-VU" },
-                { "WF", "fr-WF" },
-                { "WS", "en-WS" },
-                { "XK", "sq-XK" },
-                { "YE", "ar-YE" },
-                { "YT", "fr-YT" },
-                { "ZA", "af-ZA" },
-                { "ZM", "en-ZM" },
-                { "ZW", "en-ZW" }
-            };
-
-        // Cache of regions we've already looked up
-        private static volatile Dictionary<string, CultureData>? s_cachedRegions;
-        private static volatile Dictionary<string, string>? s_regionNames;
-
-        internal static CultureData? GetCultureDataForRegion(string? cultureName, bool useUserOverride)
+        internal static CultureData? GetCultureDataForRegion(int culture, bool useUserOverride)
         {
             // First do a shortcut for Invariant
-            if (string.IsNullOrEmpty(cultureName))
+            if (culture == CultureInfo.LOCALE_INVARIANT)
             {
                 return CultureData.Invariant;
             }
 
             // First check if GetCultureData() can find it (ie: its a real culture)
-            CultureData? retVal = GetCultureData(cultureName, useUserOverride);
+            CultureData? retVal = GetCultureData(culture, useUserOverride);
             if (retVal != null && !retVal.IsNeutralCulture)
             {
                 return retVal;
@@ -433,69 +160,21 @@ namespace System.Globalization
             // Not a specific culture, perhaps it's region-only name
             // (Remember this isn't a core clr path where that's not supported)
 
-            // If it was neutral remember that so that RegionInfo() can throw the right exception
-            CultureData? neutral = retVal;
+            // Return the found culture to use, null, or the neutral culture.
+            return retVal;
+        }
 
-            // Try the hash table next
-            string hashName = AnsiToLower(useUserOverride ? cultureName : cultureName + '*');
-            Dictionary<string, CultureData>? tempHashTable = s_cachedRegions;
-
-            if (tempHashTable == null)
-            {
-                // No table yet, make a new one
-                tempHashTable = new Dictionary<string, CultureData>();
-            }
-            else
-            {
-                // Check the hash table
-                lock (s_lock)
-                {
-                    tempHashTable.TryGetValue(hashName, out retVal);
-                }
-                if (retVal != null)
-                {
-                    return retVal;
-                }
-            }
-
-            // Not found in the hash table, look it up the hard way
-
-            // If not a valid mapping from the registry we'll have to try the hard coded table
-            if (retVal == null || retVal.IsNeutralCulture)
-            {
-                // Not a valid mapping, try the hard coded table
-                if (RegionNames.TryGetValue(cultureName, out string? name))
-                {
-                    // Make sure we can get culture data for it
-                    retVal = GetCultureData(name, useUserOverride);
-                }
-            }
-
-            // If not found in the hard coded table we'll have to find a culture that works for us
-            if (!GlobalizationMode.Invariant && (retVal == null || retVal.IsNeutralCulture))
-            {
-                retVal = GlobalizationMode.UseNls ? NlsGetCultureDataFromRegionName(cultureName) : IcuGetCultureDataFromRegionName(cultureName);
-            }
-
-            // If we found one we can use, then cache it for next time
+        internal static CultureData? GetCultureDataForRegion(string localNmae, bool useUserOverride)
+        {
+            // First check if GetCultureData() can find it (ie: its a real culture)
+            CultureData? retVal = GetCultureData(localNmae, useUserOverride);
             if (retVal != null && !retVal.IsNeutralCulture)
             {
-                // first add it to the cache
-                lock (s_lock)
-                {
-                    tempHashTable[hashName] = retVal;
-                }
+                return retVal;
+            }
 
-                // Copy the hashtable to the corresponding member variables.  This will potentially overwrite
-                // new tables simultaneously created by a new thread, but maximizes thread safety.
-                s_cachedRegions = tempHashTable;
-            }
-            else
-            {
-                // Unable to find a matching culture/region, return null or neutral
-                // (regionInfo throws a more specific exception on neutrals)
-                retVal = neutral;
-            }
+            // Not a specific culture, perhaps it's region-only name
+            // (Remember this isn't a core clr path where that's not supported)
 
             // Return the found culture to use, null, or the neutral culture.
             return retVal;
@@ -505,7 +184,6 @@ namespace System.Globalization
         internal static void ClearCachedData()
         {
             s_cachedCultures = null;
-            s_cachedRegions = null;
         }
 
         internal static CultureInfo[] GetCultures(CultureTypes types)
@@ -536,11 +214,11 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
             {
                 // in invariant mode we always return invariant culture only from the enumeration
-                return new CultureInfo[] { new CultureInfo("") };
+                return new CultureInfo[] { CultureInfo.InvariantCulture };
             }
 
 #pragma warning restore 618
-            return GlobalizationMode.UseNls ? NlsEnumCultures(types) : IcuEnumCultures(types);
+            return NlsEnumCultures(types);
         }
 
         private static CultureData CreateCultureWithInvariantData()
@@ -552,16 +230,15 @@ namespace System.Globalization
             // Note that we override the resources since this IS NOT supposed to change (by definition)
             invariant._bUseOverrides = false;
             invariant._bUseOverridesUserSetting = false;
-            invariant._sRealName = "";                     // Name you passed in (ie: en-US, en, or de-DE_phoneb)
-            invariant._sWindowsName = "";                     // Name OS thinks the object is (ie: de-DE_phoneb, or en-US (even if en was passed in))
 
             // Identity
-            invariant._sName = "";                     // locale name (ie: en-us)
-            invariant._sParent = "";                     // Parent name (which may be a custom locale/culture)
+            invariant._iLcid = CultureInfo.LOCALE_INVARIANT;  // Name OS thinks the object is (ie: de-DE_phoneb, or en-US (even if en was passed in))
+            invariant._iLanguage = CultureInfo.LOCALE_INVARIANT;   // locale ID (0409) - NO sort information
+            invariant._iParent = CultureInfo.LOCALE_INVARIANT;     // Parent name (which may be a custom locale/culture)
             invariant._bNeutral = false;                   // Flags for the culture (ie: neutral or not right now)
             invariant._sEnglishDisplayName = "Invariant Language (Invariant Country)"; // English pretty name for this locale
             invariant._sNativeDisplayName = "Invariant Language (Invariant Country)";  // Native pretty name for this locale
-            invariant._sSpecificCulture = "";                     // The culture name to be used in CultureInfo.CreateSpecificCulture()
+            invariant._iSpecificCulture = CultureInfo.LOCALE_INVARIANT;                // The culture name to be used in CultureInfo.CreateSpecificCulture()
 
             // Language
             invariant._sISO639Language = "iv";                   // ISO 639 Language Name
@@ -642,7 +319,6 @@ namespace System.Globalization
 
             // These are .NET Framework only, not coreclr
 
-            invariant._iLanguage = CultureInfo.LOCALE_INVARIANT;   // locale ID (0409) - NO sort information
             invariant._iDefaultAnsiCodePage = 1252;         // default ansi code page ID (ACP)
             invariant._iDefaultOemCodePage = 437;           // default oem code page ID (OCP or OEM)
             invariant._iDefaultMacCodePage = 10000;         // default macintosh code page
@@ -665,24 +341,29 @@ namespace System.Globalization
         private static volatile CultureData? s_Invariant;
 
         // Cache of cultures we've already looked up
-        private static volatile Dictionary<string, CultureData>? s_cachedCultures;
+        private static volatile Dictionary<int, CultureData>? s_cachedCultures;
         private static readonly object s_lock = new object();
 
-        internal static CultureData? GetCultureData(string? cultureName, bool useUserOverride)
+        internal static CultureData? GetCultureData(int culture, bool useUserOverride)
         {
             // First do a shortcut for Invariant
-            if (string.IsNullOrEmpty(cultureName))
+            if (culture == CultureInfo.LOCALE_INVARIANT)
             {
                 return CultureData.Invariant;
             }
 
+            if (GlobalizationMode.Invariant)
+            {
+                // LCID is not supported in the InvariantMode
+                throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
+            }
+
             // Try the hash table first
-            string hashName = AnsiToLower(useUserOverride ? cultureName : cultureName + '*');
-            Dictionary<string, CultureData>? tempHashTable = s_cachedCultures;
+            Dictionary<int, CultureData>? tempHashTable = s_cachedCultures;
             if (tempHashTable == null)
             {
                 // No table yet, make a new one
-                tempHashTable = new Dictionary<string, CultureData>();
+                tempHashTable = new Dictionary<int, CultureData>();
             }
             else
             {
@@ -691,7 +372,7 @@ namespace System.Globalization
                 CultureData? retVal;
                 lock (s_lock)
                 {
-                    ret = tempHashTable.TryGetValue(hashName, out retVal);
+                    ret = tempHashTable.TryGetValue(culture, out retVal);
                 }
                 if (ret && retVal != null)
                 {
@@ -700,8 +381,8 @@ namespace System.Globalization
             }
 
             // Not found in the hash table, need to see if we can build one that works for us
-            CultureData? culture = CreateCultureData(cultureName, useUserOverride);
-            if (culture == null)
+            CultureData? cultureData = CreateCultureData(culture, useUserOverride);
+            if (cultureData == null)
             {
                 return null;
             }
@@ -709,14 +390,25 @@ namespace System.Globalization
             // Found one, add it to the cache
             lock (s_lock)
             {
-                tempHashTable[hashName] = culture;
+                tempHashTable[culture] = cultureData;
             }
 
             // Copy the hashtable to the corresponding member variables.  This will potentially overwrite
             // new tables simultaneously created by a new thread, but maximizes thread safety.
             s_cachedCultures = tempHashTable;
 
-            return culture;
+            return cultureData;
+        }
+
+        internal static CultureData? GetCultureData(string cultureName, bool useUserOverride)
+        {
+            int culture = NlsLocaleNameToLCID(cultureName);
+            if (culture == 0)
+            {
+                throw new CultureNotFoundException(nameof(cultureName), cultureName, SR.Argument_CultureNotSupported);
+            }
+
+            return GetCultureData(culture, useUserOverride);
         }
 
         private static string NormalizeCultureName(string name, out bool isNeutralName)
@@ -777,136 +469,31 @@ namespace System.Globalization
             return name;
         }
 
-        private static CultureData? CreateCultureData(string cultureName, bool useUserOverride)
+        private static CultureData? CreateCultureData(int culture, bool useUserOverride)
         {
             if (GlobalizationMode.Invariant)
             {
-                if (cultureName.Length > LocaleNameMaxLength || !CultureInfo.VerifyCultureName(cultureName, false))
-                {
-                    return null;
-                }
                 CultureData cd = CreateCultureWithInvariantData();
-                cd._sName = NormalizeCultureName(cultureName, out cd._bNeutral);
                 cd._bUseOverridesUserSetting = useUserOverride;
-                cd._sRealName = cd._sName;
-                cd._sWindowsName = cd._sName;
+                cd._iLcid = CultureInfo.LOCALE_CUSTOM_UNSPECIFIED;
                 cd._iLanguage = CultureInfo.LOCALE_CUSTOM_UNSPECIFIED;
 
                 return cd;
             }
 
-            if (cultureName.Length == 1 && (cultureName[0] == 'C' || cultureName[0] == 'c'))
-            {
-                // Always map the "C" locale to Invariant to avoid mapping it to en_US_POSIX on Linux because POSIX
-                // locale collation doesn't support case insensitive comparisons.
-                // We do the same mapping on Windows for the sake of consistency.
-                return CultureData.Invariant;
-            }
-
-            CultureData culture = new CultureData();
-            culture._sRealName = cultureName;
-            culture._bUseOverridesUserSetting = useUserOverride;
+            CultureData cultureData = new CultureData();
+            cultureData._iLcid = culture;
+            cultureData._bUseOverridesUserSetting = useUserOverride;
 
             // Ask native code if that one's real
-            if (!culture.InitCultureDataCore() && !culture.InitCompatibilityCultureData())
+            if (!cultureData.InitCultureDataCore())
             {
                 return null;
             }
 
             // We need _sWindowsName to be initialized to know if we're using overrides.
-            culture.InitUserOverride(useUserOverride);
-            return culture;
-        }
-
-        private bool InitCompatibilityCultureData()
-        {
-            // for compatibility handle the deprecated ids: zh-chs, zh-cht
-            string cultureName = _sRealName!;
-
-            string fallbackCultureName;
-            string realCultureName;
-            switch (AnsiToLower(cultureName))
-            {
-                case "zh-chs":
-                    fallbackCultureName = "zh-Hans";
-                    realCultureName = "zh-CHS";
-                    break;
-                case "zh-cht":
-                    fallbackCultureName = "zh-Hant";
-                    realCultureName = "zh-CHT";
-                    break;
-                default:
-                    return false;
-            }
-
-            _sRealName = fallbackCultureName;
-            if (!InitCultureDataCore())
-            {
-                return false;
-            }
-
-            // fixup our data
-            _sName = realCultureName; // the name that goes back to the user
-            _sParent = fallbackCultureName;
-
-            return true;
-        }
-
-        /// We'd rather people use the named version since this doesn't allow custom locales
-        internal static CultureData GetCultureData(int culture, bool bUseUserOverride)
-        {
-            string? localeName = null;
-            CultureData? retVal = null;
-
-            if (culture == CultureInfo.LOCALE_INVARIANT)
-            {
-                return Invariant;
-            }
-
-            if (GlobalizationMode.Invariant)
-            {
-                // LCID is not supported in the InvariantMode
-                throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
-            }
-
-            // Convert the lcid to a name, then use that
-            localeName = LCIDToLocaleName(culture);
-
-            if (!string.IsNullOrEmpty(localeName))
-            {
-                // Valid name, use it
-                retVal = GetCultureData(localeName, bUseUserOverride);
-            }
-
-            // If not successful, throw
-            if (retVal == null)
-            {
-                throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
-            }
-
-            // Return the one we found
-            return retVal;
-        }
-
-        /// <summary>
-        /// The real name used to construct the locale (ie: de-DE_phoneb)
-        /// </summary>
-        internal string CultureName
-        {
-            get
-            {
-                Debug.Assert(_sRealName != null, "[CultureData.CultureName] Expected _sRealName to be populated by already");
-                // since windows doesn't know about zh-CHS and zh-CHT,
-                // we leave sRealName == zh-Hanx but we still need to
-                // pretend that it was zh-CHX.
-                switch (_sName)
-                {
-                    case "zh-CHS":
-                    case "zh-CHT":
-                        return _sName;
-                }
-                return _sRealName;
-            }
+            cultureData.InitUserOverride(useUserOverride);
+            return cultureData;
         }
 
         /// <summary>
@@ -917,11 +504,11 @@ namespace System.Globalization
         /// <summary>
         /// locale name (ie: de-DE, NO sort information)
         /// </summary>
-        internal string Name => _sName ?? string.Empty;
+        internal int LANGID => _iLanguage;
 
         // Parent name (which may be a custom locale/culture)
         // Ask using the real name, so that we get parents of neutrals
-        internal string ParentName => _sParent ??= GetLocaleInfoCore(_sRealName!, LocaleStringData.ParentName);
+        internal int ParentLCID => _iParent ??= Interop.Kernel32.DownlevelGetParentLocaleLCID(LCID);
 
         // Localized pretty name for this locale (ie: Inglis (estados Unitos))
         internal string DisplayName
@@ -946,21 +533,7 @@ namespace System.Globalization
                     {
                         try
                         {
-                            const string ZH_CHT = "zh-CHT";
-                            const string ZH_CHS = "zh-CHS";
-
-                            if (Name.Equals(ZH_CHT, StringComparison.OrdinalIgnoreCase))
-                            {
-                                localizedDisplayName = GetLanguageDisplayNameCore("zh-Hant");
-                            }
-                            else if (Name.Equals(ZH_CHS, StringComparison.OrdinalIgnoreCase))
-                            {
-                                localizedDisplayName = GetLanguageDisplayNameCore("zh-Hans");
-                            }
-                            else
-                            {
-                                localizedDisplayName = GetLanguageDisplayNameCore(Name);
-                            }
+                            localizedDisplayName = GetLanguageDisplayNameCore(LCID);
                         }
                         catch
                         {
@@ -1002,9 +575,7 @@ namespace System.Globalization
             }
         }
 
-        private string GetLanguageDisplayNameCore(string cultureName) => GlobalizationMode.UseNls ?
-                                                                            NlsGetLanguageDisplayName(cultureName) :
-                                                                            IcuGetLanguageDisplayName(cultureName);
+        private string GetLanguageDisplayNameCore(int culture) => NlsGetLanguageDisplayName(culture);
 
         /// <summary>
         /// English pretty name for this locale (ie: English (United States))
@@ -1020,14 +591,6 @@ namespace System.Globalization
                     if (IsNeutralCulture)
                     {
                         englishDisplayName = EnglishLanguageName;
-                        // differentiate the legacy display names
-                        switch (_sName)
-                        {
-                            case "zh-CHS":
-                            case "zh-CHT":
-                                englishDisplayName += " Legacy";
-                                break;
-                        }
                     }
                     else
                     {
@@ -1077,16 +640,6 @@ namespace System.Globalization
                     if (IsNeutralCulture)
                     {
                         nativeDisplayName = NativeLanguageName;
-                        // differentiate the legacy display names
-                        switch (_sName)
-                        {
-                            case "zh-CHS":
-                                nativeDisplayName += " \u65E7\u7248";
-                                break;
-                            case "zh-CHT":
-                                nativeDisplayName += " \u820A\u7248";
-                                break;
-                        }
                     }
                     else
                     {
@@ -1110,13 +663,13 @@ namespace System.Globalization
         /// <summary>
         /// The culture name to be used in CultureInfo.CreateSpecificCulture()
         /// </summary>
-        internal string SpecificCultureName
+        internal int SpecificCultureId
         {
             get
             {
                 // This got populated during the culture initialization
-                Debug.Assert(_sSpecificCulture != null, "[CultureData.SpecificCultureName] Expected this.sSpecificCulture to be populated by culture data initialization already");
-                return _sSpecificCulture;
+                Debug.Assert(_iSpecificCulture != null, "[CultureData.SpecificCultureName] Expected this.sSpecificCulture to be populated by culture data initialization already");
+                return _iSpecificCulture.value;
             }
         }
 
@@ -1133,9 +686,7 @@ namespace System.Globalization
         /// <summary>
         /// abbreviated windows language name (ie: enu) (non-standard, avoid this)
         /// </summary>
-        internal string ThreeLetterWindowsLanguageName => _sAbbrevLang ??= GlobalizationMode.UseNls ?
-                                                                            NlsGetThreeLetterWindowsLanguageName(_sRealName!) :
-                                                                            IcuGetThreeLetterWindowsLanguageName(_sRealName!);
+        internal string ThreeLetterWindowsLanguageName => _sAbbrevLang ??= NlsGetThreeLetterWindowsLanguageName(LCID);
 
         /// <summary>
         /// Localized name for this language (Windows Only) ie: Inglis
@@ -1188,7 +739,7 @@ namespace System.Globalization
             {
                 if (_iGeoId == undef && !GlobalizationMode.Invariant)
                 {
-                    _iGeoId = GlobalizationMode.UseNls ? NlsGetLocaleInfo(LocaleNumberData.GeoId) : IcuGetGeoId(_sRealName!);
+                    _iGeoId = NlsGetLocaleInfo(LocaleNumberData.GeoId);
                 }
                 return _iGeoId;
             }
@@ -1206,7 +757,7 @@ namespace System.Globalization
                 {
                     try
                     {
-                        localizedCountry = GlobalizationMode.UseNls ? NlsGetRegionDisplayName() : IcuGetRegionDisplayName();
+                        localizedCountry = NlsGetRegionDisplayName();
                     }
                     catch
                     {
@@ -1254,7 +805,7 @@ namespace System.Globalization
                     else
                     {
                         // Input Language is same as LCID for built-in cultures
-                        _iInputLanguageHandle = LCID;
+                        _iInputLanguageHandle = LANGID;
                     }
                 }
                 return _iInputLanguageHandle;
@@ -1264,9 +815,7 @@ namespace System.Globalization
         /// <summary>
         /// Console fallback name (ie: locale to use for console apps for unicode-only locales)
         /// </summary>
-        internal string SCONSOLEFALLBACKNAME => _sConsoleFallbackName ??= GlobalizationMode.UseNls ?
-                                                                            NlsGetConsoleFallbackName(_sRealName!) :
-                                                                            IcuGetConsoleFallbackName(_sRealName!);
+        internal string SCONSOLEFALLBACKNAME => _sConsoleFallbackName ??= NlsGetConsoleFallbackName(LCID);
 
         /// <summary>
         /// grouping of digits
@@ -1378,7 +927,7 @@ namespace System.Globalization
         /// list Separator
         /// (user can override)
         /// </summary>
-        internal string ListSeparator => _sListSeparator ??= ShouldUseUserOverrideNlsData ? NlsGetLocaleInfo(LocaleStringData.ListSeparator) : IcuGetListSeparator(_sWindowsName);
+        internal string ListSeparator => _sListSeparator ??= NlsGetLocaleInfo(LocaleStringData.ListSeparator);
 
         /// <summary>
         /// AM designator
@@ -1585,7 +1134,7 @@ namespace System.Globalization
             {
                 if (_iFirstDayOfWeek == undef && !GlobalizationMode.Invariant)
                 {
-                    _iFirstDayOfWeek = ShouldUseUserOverrideNlsData ? NlsGetFirstDayOfWeek() : IcuGetLocaleInfo(LocaleNumberData.FirstDayOfWeek);
+                    _iFirstDayOfWeek = NlsGetFirstDayOfWeek();
                 }
                 return _iFirstDayOfWeek;
             }
@@ -1695,9 +1244,8 @@ namespace System.Globalization
                     // We then have to copy that list to a new array of the right size.
                     // Default calendar should be first
                     CalendarId[] calendars = new CalendarId[23];
-                    Debug.Assert(_sWindowsName != null, "[CultureData.CalendarIds] Expected _sWindowsName to be populated by already");
 
-                    int count = CalendarData.GetCalendarsCore(_sWindowsName, _bUseOverrides, calendars);
+                    int count = CalendarData.GetCalendarsCore(LCID, _bUseOverrides, calendars);
 
                     // See if we had a calendar to add.
                     if (count == 0)
@@ -1707,34 +1255,6 @@ namespace System.Globalization
                     }
                     else
                     {
-                        // The OS may not return calendar 4 for zh-TW, but we've always allowed it.
-                        // TODO: Is this hack necessary long-term?
-                        if (_sWindowsName == "zh-TW")
-                        {
-                            bool found = false;
-
-                            // Do we need to insert calendar 4?
-                            for (int i = 0; i < count; i++)
-                            {
-                                // Stop if we found calendar four
-                                if (calendars[i] == CalendarId.TAIWAN)
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            // If not found then insert it
-                            if (!found)
-                            {
-                                // Insert it as the 2nd calendar
-                                count++;
-                                // Copy them from the 2nd position to the end, -1 for skipping 1st, -1 for one being added.
-                                Array.Copy(calendars, 1, calendars, 2, 23 - 1 - 1);
-                                calendars[1] = CalendarId.TAIWAN;
-                            }
-                        }
-
                         // It worked, remember the list
                         CalendarId[] temp = new CalendarId[count];
                         Array.Copy(calendars, temp, count);
@@ -1779,8 +1299,7 @@ namespace System.Globalization
             // Make sure that calendar has data
             if (calendarData == null)
             {
-                Debug.Assert(_sWindowsName != null, "[CultureData.GetCalendar] Expected _sWindowsName to be populated by already");
-                calendarData = new CalendarData(_sWindowsName, calendarId, _bUseOverrides);
+                calendarData = new CalendarData(LCID, calendarId, _bUseOverrides);
                 _calendars[calendarIndex] = calendarData;
             }
 
@@ -1808,7 +1327,6 @@ namespace System.Globalization
             {
                 if (_iReadingLayout == undef && !GlobalizationMode.Invariant)
                 {
-                    Debug.Assert(_sRealName != null, "[CultureData.IsRightToLeft] Expected _sRealName to be populated by already");
                     _iReadingLayout = GetLocaleInfoCore(LocaleNumberData.ReadingLayout);
                 }
 
@@ -1826,28 +1344,12 @@ namespace System.Globalization
         /// fj_FJ (custom specific) -> en-US (assuming that en-US is the sort locale for fj-FJ)
         /// es-ES_tradnl -> es-ES
         /// </summary>
-        internal string TextInfoName
-        {
-            get
-            {
-                // Note: Custom cultures might point at another culture's textinfo, however windows knows how
-                // to redirect it to the desired textinfo culture, so this is OK.
-                Debug.Assert(_sRealName != null, "[CultureData.TextInfoName] Expected _sRealName to be populated by already");
-                return _sRealName;
-            }
-        }
+        internal int TextInfoId => LCID;
 
         /// <summary>
         /// Compare info name (including sorting key) to use if custom
         /// </summary>
-        internal string SortName
-        {
-            get
-            {
-                Debug.Assert(_sRealName != null, "[CultureData.SortName] Expected _sRealName to be populated by already");
-                return _sRealName;
-            }
-        }
+        internal int SortId => LCID;
 
         internal bool IsSupplementalCustomCulture => IsCustomCultureId(LCID);
 
@@ -1860,7 +1362,7 @@ namespace System.Globalization
             {
                 if (_iDefaultAnsiCodePage == undef && !GlobalizationMode.Invariant)
                 {
-                    _iDefaultAnsiCodePage = GetAnsiCodePage(_sRealName!);
+                    _iDefaultAnsiCodePage = GetAnsiCodePage(LCID);
                 }
                 return _iDefaultAnsiCodePage;
             }
@@ -1875,7 +1377,7 @@ namespace System.Globalization
             {
                 if (_iDefaultOemCodePage == undef && !GlobalizationMode.Invariant)
                 {
-                    _iDefaultOemCodePage = GetOemCodePage(_sRealName!);
+                    _iDefaultOemCodePage = GetOemCodePage(LCID);
                 }
                 return _iDefaultOemCodePage;
             }
@@ -1890,7 +1392,7 @@ namespace System.Globalization
             {
                 if (_iDefaultMacCodePage == undef && !GlobalizationMode.Invariant)
                 {
-                    _iDefaultMacCodePage = GetMacCodePage(_sRealName!);
+                    _iDefaultMacCodePage = GetMacCodePage(LCID);
                 }
                 return _iDefaultMacCodePage;
             }
@@ -1905,30 +1407,19 @@ namespace System.Globalization
             {
                 if (_iDefaultEbcdicCodePage == undef && !GlobalizationMode.Invariant)
                 {
-                    _iDefaultEbcdicCodePage = GetEbcdicCodePage(_sRealName!);
+                    _iDefaultEbcdicCodePage = GetEbcdicCodePage(LCID);
                 }
                 return _iDefaultEbcdicCodePage;
             }
         }
 
-        internal int LCID
-        {
-            get
-            {
-                if (_iLanguage == 0 && !GlobalizationMode.Invariant)
-                {
-                    Debug.Assert(_sRealName != null, "[CultureData.LCID] Expected this.sRealName to be populated already");
-                    _iLanguage = GlobalizationMode.UseNls ? NlsLocaleNameToLCID(_sRealName) : IcuLocaleNameToLCID(_sRealName);
-                }
-                return _iLanguage;
-            }
-        }
+        internal int LCID => _iLcid;
 
         internal bool IsNeutralCulture =>
             // InitCultureData told us if we're neutral or not
             _bNeutral;
 
-        internal bool IsInvariantCulture => string.IsNullOrEmpty(Name);
+        internal bool IsInvariantCulture => LCID == CultureInfo.LOCALE_INVARIANT;
 
         internal bool IsReplacementCulture => GlobalizationMode.UseNls ? NlsIsReplacementCulture : false;
 
@@ -1985,7 +1476,7 @@ namespace System.Globalization
             {
                 if (_sTimeSeparator == null && !GlobalizationMode.Invariant)
                 {
-                    string? longTimeFormat = ShouldUseUserOverrideNlsData ? NlsGetTimeFormatString() : IcuGetTimeFormatString();
+                    string? longTimeFormat = NlsGetTimeFormatString();
                     if (string.IsNullOrEmpty(longTimeFormat))
                     {
                         longTimeFormat = LongTimes[0];
@@ -2190,7 +1681,6 @@ namespace System.Globalization
             }
             else
             {
-                Debug.Assert(_sWindowsName != null, "[CultureData.GetNFIValues] Expected _sWindowsName to be populated by already");
                 // String values
                 nfi._positiveSign = GetLocaleInfoCoreUserOverride(LocaleStringData.PositiveSign);
                 nfi._negativeSign = GetLocaleInfoCoreUserOverride(LocaleStringData.NegativeSign);
@@ -2216,8 +1706,7 @@ namespace System.Globalization
                     nfi._nativeDigits[i] = char.ToString(digits[i]);
                 }
 
-                Debug.Assert(_sRealName != null);
-                nfi._digitSubstitution = ShouldUseUserOverrideNlsData ? NlsGetLocaleInfo(LocaleNumberData.DigitSubstitution) : IcuGetDigitSubstitution(_sRealName);
+                nfi._digitSubstitution = NlsGetLocaleInfo(LocaleNumberData.DigitSubstitution);
             }
 
             // Gather additional data
@@ -2268,7 +1757,7 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return 0;
 
-            return GlobalizationMode.UseNls ? NlsGetLocaleInfo(type) : IcuGetLocaleInfo(type);
+            return NlsGetLocaleInfo(type);
         }
 
         private int GetLocaleInfoCoreUserOverride(LocaleNumberData type)
@@ -2277,7 +1766,7 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return 0;
 
-            return ShouldUseUserOverrideNlsData ? NlsGetLocaleInfo(type) : IcuGetLocaleInfo(type);
+            return NlsGetLocaleInfo(type);
         }
 
         private string GetLocaleInfoCoreUserOverride(LocaleStringData type)
@@ -2286,7 +1775,7 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return null!;
 
-            return ShouldUseUserOverrideNlsData ? NlsGetLocaleInfo(type) : IcuGetLocaleInfo(type);
+            return NlsGetLocaleInfo(type);
         }
 
         private string GetLocaleInfoCore(LocaleStringData type)
@@ -2295,16 +1784,16 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return null!;
 
-            return GlobalizationMode.UseNls ? NlsGetLocaleInfo(type) : IcuGetLocaleInfo(type);
+            return NlsGetLocaleInfo(type);
         }
 
-        private string GetLocaleInfoCore(string localeName, LocaleStringData type)
+        private string GetLocaleInfoCore(int culture, LocaleStringData type)
         {
             // This is never reached but helps illinker statically remove dependencies
             if (GlobalizationMode.Invariant)
                 return null!;
 
-            return GlobalizationMode.UseNls ? NlsGetLocaleInfo(localeName, type) : IcuGetLocaleInfo(localeName, type);
+            return NlsGetLocaleInfo(culture, type);
         }
 
         private int[] GetLocaleInfoCoreUserOverride(LocaleGroupingData type)
@@ -2313,7 +1802,7 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return null!;
 
-            return ShouldUseUserOverrideNlsData ? NlsGetLocaleInfo(type) : IcuGetLocaleInfo(type);
+            return NlsGetLocaleInfo(type);
         }
 
         /// <remarks>

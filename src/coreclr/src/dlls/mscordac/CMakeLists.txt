@@ -163,6 +163,7 @@ if(CLR_CMAKE_HOST_WIN32)
         version.lib
         ntdll.lib
         ${STATIC_MD_CRT_LIB}
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 else(CLR_CMAKE_HOST_WIN32)
     list(APPEND COREDAC_LIBRARIES

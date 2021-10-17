@@ -33,28 +33,14 @@ namespace System.Globalization
         // Cache the invariant CompareInfo
         internal static readonly CompareInfo Invariant = CultureInfo.InvariantCulture.CompareInfo;
 
-        // CompareInfos have an interesting identity.  They are attached to the locale that created them,
-        // ie: en-US would have an en-US sort.  For haw-US (custom), then we serialize it as haw-US.
-        // The interesting part is that since haw-US doesn't have its own sort, it has to point at another
-        // locale, which is what SCOMPAREINFO does.
-        [OptionalField(VersionAdded = 2)]
-        private string m_name;  // The name used to construct this CompareInfo. Do not rename (binary serialization)
-
         [NonSerialized]
-        private IntPtr _sortHandle;
-
-        [NonSerialized]
-        private string _sortName; // The name that defines our behavior
-
-        [OptionalField(VersionAdded = 3)]
         private SortVersion? m_SortVersion; // Do not rename (binary serialization)
 
         private int culture; // Do not rename (binary serialization). The fields sole purpose is to support Desktop serialization.
 
         internal CompareInfo(CultureInfo culture)
         {
-            m_name = culture._name;
-            InitSort(culture);
+            this.culture = culture.LCID;
         }
 
         /// <summary>
@@ -162,7 +148,7 @@ namespace System.Globalization
                 return true; // all chars are sortable in invariant mode
             }
 
-            return (GlobalizationMode.UseNls) ? NlsIsSortable(text) : IcuIsSortable(text);
+            return NlsIsSortable(text);
         }
 
         /// <summary>
@@ -180,27 +166,9 @@ namespace System.Globalization
             return IsSortable(valueAsUtf16.Slice(0, charCount));
         }
 
-        [MemberNotNull(nameof(_sortName))]
-        private void InitSort(CultureInfo culture)
-        {
-            _sortName = culture.SortName;
-
-            if (GlobalizationMode.UseNls)
-            {
-                NlsInitSortHandle();
-            }
-            else
-            {
-                IcuInitSortHandle();
-            }
-        }
-
         [OnDeserializing]
         private void OnDeserializing(StreamingContext ctx)
         {
-            // this becomes null for a brief moment before deserialization
-            // after serialization is finished it is never null.
-            m_name = null!;
         }
 
         void IDeserializationCallback.OnDeserialization(object? sender)
@@ -216,24 +184,11 @@ namespace System.Globalization
 
         private void OnDeserialized()
         {
-            // If we didn't have a name, use the LCID
-            if (m_name == null)
-            {
-                // From whidbey, didn't have a name
-                m_name = CultureInfo.GetCultureInfo(culture)._name;
-            }
-            else
-            {
-                InitSort(CultureInfo.GetCultureInfo(m_name));
-            }
         }
 
         [OnSerializing]
         private void OnSerializing(StreamingContext ctx)
         {
-            // This is merely for serialization compatibility with Whidbey/Orcas, it can go away when we don't want that compat any more.
-            culture = CultureInfo.GetCultureInfo(Name).LCID; // This is the lcid of the constructing culture (still have to dereference to get target sort)
-            Debug.Assert(m_name != null, "CompareInfo.OnSerializing - expected m_name to be set already");
         }
 
         /// <summary>
@@ -246,19 +201,7 @@ namespace System.Globalization
         ///  and the locale's changed behavior, then you'll get changed behavior, which is like
         ///  what happens for a version update)
         /// </summary>
-        public string Name
-        {
-            get
-            {
-                Debug.Assert(m_name != null, "CompareInfo.Name Expected _name to be set");
-                if (m_name == "zh-CHT" || m_name == "zh-CHS")
-                {
-                    return m_name;
-                }
-
-                return _sortName;
-            }
-        }
+        public string Name => CultureInfo.NlsLCIDToLocalName(CultureInfo.GetCultureInfo(culture).SortId);
 
         /// <summary>
         /// Compares the two strings with the given options.  Returns 0 if the
@@ -506,9 +449,7 @@ namespace System.Globalization
         }
 
         private unsafe int CompareStringCore(ReadOnlySpan<char> string1, ReadOnlySpan<char> string2, CompareOptions options) =>
-            GlobalizationMode.UseNls ?
-                NlsCompareString(string1, string2, options) :
-                IcuCompareString(string1, string2, options);
+            NlsCompareString(string1, string2, options);
 
         /// <summary>
         /// Determines whether prefix is a prefix of string.  If prefix equals
@@ -639,9 +580,7 @@ namespace System.Globalization
         }
 
         private unsafe bool StartsWithCore(ReadOnlySpan<char> source, ReadOnlySpan<char> prefix, CompareOptions options, int* matchLengthPtr) =>
-            GlobalizationMode.UseNls ?
-                NlsStartsWith(source, prefix, options, matchLengthPtr) :
-                IcuStartsWith(source, prefix, options, matchLengthPtr);
+            NlsStartsWith(source, prefix, options, matchLengthPtr);
 
         public bool IsPrefix(string source, string prefix)
         {
@@ -782,9 +721,7 @@ namespace System.Globalization
         }
 
         private unsafe bool EndsWithCore(ReadOnlySpan<char> source, ReadOnlySpan<char> suffix, CompareOptions options, int* matchLengthPtr) =>
-            GlobalizationMode.UseNls ?
-                NlsEndsWith(source, suffix, options, matchLengthPtr) :
-                IcuEndsWith(source, suffix, options, matchLengthPtr);
+            NlsEndsWith(source, suffix, options, matchLengthPtr);
 
         /// <summary>
         /// Returns the first index where value is found in string.  The
@@ -1115,9 +1052,7 @@ namespace System.Globalization
         }
 
         private unsafe int IndexOfCore(ReadOnlySpan<char> source, ReadOnlySpan<char> target, CompareOptions options, int* matchLengthPtr, bool fromBeginning) =>
-            GlobalizationMode.UseNls ?
-                NlsIndexOfCore(source, target, options, matchLengthPtr, fromBeginning) :
-                IcuIndexOfCore(source, target, options, matchLengthPtr, fromBeginning);
+            NlsIndexOfCore(source, target, options, matchLengthPtr, fromBeginning);
 
         /// <summary>
         /// Returns the last index where value is found in string.  The
@@ -1440,9 +1375,7 @@ namespace System.Globalization
         }
 
         private SortKey CreateSortKeyCore(string source, CompareOptions options) =>
-            GlobalizationMode.UseNls ?
-                NlsCreateSortKey(source, options) :
-                IcuCreateSortKey(source, options);
+            NlsCreateSortKey(source, options);
 
         /// <summary>
         /// Computes a sort key over the specified input.
@@ -1479,9 +1412,7 @@ namespace System.Globalization
         }
 
         private int GetSortKeyCore(ReadOnlySpan<char> source, Span<byte> destination, CompareOptions options) =>
-           GlobalizationMode.UseNls ?
-               NlsGetSortKey(source, destination, options) :
-               IcuGetSortKey(source, destination, options);
+           NlsGetSortKey(source, destination, options);
 
         /// <summary>
         /// Returns the length (in bytes) of the sort key that would be produced from the specified input.
@@ -1512,17 +1443,15 @@ namespace System.Globalization
         }
 
         private int GetSortKeyLengthCore(ReadOnlySpan<char> source, CompareOptions options) =>
-          GlobalizationMode.UseNls ?
-              NlsGetSortKeyLength(source, options) :
-              IcuGetSortKeyLength(source, options);
+          NlsGetSortKeyLength(source, options);
 
         public override bool Equals(object? value)
         {
             return value is CompareInfo otherCompareInfo
-                && Name == otherCompareInfo.Name;
+                && LCID == otherCompareInfo.LCID;
         }
 
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => LCID.GetHashCode();
 
         /// <summary>
         /// This method performs the equivalent of of creating a Sortkey for a string from CompareInfo,
@@ -1585,9 +1514,7 @@ namespace System.Globalization
         }
 
         private unsafe int GetHashCodeOfStringCore(ReadOnlySpan<char> source, CompareOptions options) =>
-            GlobalizationMode.UseNls ?
-                NlsGetHashCodeOfString(source, options) :
-                IcuGetHashCodeOfString(source, options);
+            NlsGetHashCodeOfString(source, options);
 
         public override string ToString() => "CompareInfo - " + Name;
 
@@ -1607,7 +1534,11 @@ namespace System.Globalization
                     }
                     else
                     {
-                        m_SortVersion = GlobalizationMode.UseNls ? NlsGetSortVersion() : IcuGetSortVersion();
+                        m_SortVersion = new SortVersion(0, culture, new Guid(0, 0, 0, 0, 0, 0, 0,
+                                                                        (byte)(culture >> 24),
+                                                                        (byte)((culture & 0x00FF0000) >> 16),
+                                                                        (byte)((culture & 0x0000FF00) >> 8),
+                                                                        (byte)(culture & 0xFF)));
                     }
                 }
 
@@ -1615,6 +1546,6 @@ namespace System.Globalization
             }
         }
 
-        public int LCID => CultureInfo.GetCultureInfo(Name).LCID;
+        public int LCID => culture;
     }
 }

@@ -103,7 +103,8 @@ if(CLR_CMAKE_HOST_WIN32)
     oleaut32.lib
     user32.lib
     version.lib
-    ntdll.lib)
+    ntdll.lib
+    ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib)
 else()
   set (GC_LINK_LIBRARIES)
 endif(CLR_CMAKE_HOST_WIN32)

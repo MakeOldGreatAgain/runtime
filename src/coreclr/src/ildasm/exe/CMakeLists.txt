@@ -88,6 +88,7 @@ if(CLR_CMAKE_HOST_WIN32)
         bcrypt.lib
         RuntimeObject.lib
         ntdll.lib
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 else()
     list(APPEND ILDASM_LINK_LIBRARIES

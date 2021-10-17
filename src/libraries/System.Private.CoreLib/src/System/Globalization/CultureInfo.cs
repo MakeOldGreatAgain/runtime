@@ -83,16 +83,7 @@ namespace System.Globalization
         // textinfo and compareinfo names are the same as the name
 
         // This has a de-DE, de-DE_phoneb or fj-FJ style name
-        internal string _name;
-
-        // This will hold the non sorting name to be returned from CultureInfo.Name property.
-        // This has a de-DE style name even for de-DE_phoneb type cultures
-        private string? _nonSortName;
-
-        // This will hold the sorting name to be returned from CultureInfo.SortName property.
-        // This might be completely unrelated to the culture name if a custom culture.  Ie en-US for fj-FJ.
-        // Otherwise its the sort name, ie: de-DE or de-DE_phoneb
-        private string? _sortName;
+        internal int _culture;
 
         // Get the current user default culture. This one is almost always used, so we create it by default.
         private static volatile CultureInfo? s_userDefaultCulture;
@@ -139,11 +130,15 @@ namespace System.Globalization
         // LOCALE constants of interest to us internally and privately for LCID functions
         // (ie: avoid using these and use names if possible)
         internal const int LOCALE_NEUTRAL        = 0x0000;
-        private  const int LOCALE_USER_DEFAULT   = 0x0400;
-        private  const int LOCALE_SYSTEM_DEFAULT = 0x0800;
+        internal const int LOCALE_USER_DEFAULT   = 0x0400;
+        internal const int LOCALE_SYSTEM_DEFAULT = 0x0800;
         internal const int LOCALE_CUSTOM_UNSPECIFIED = 0x1000;
         internal const int LOCALE_CUSTOM_DEFAULT  = 0x0c00;
         internal const int LOCALE_INVARIANT       = 0x007F;
+        internal const int LOCALE_ZH_TW = 0x0404;
+        internal const int LOCALE_FA_IR = 0x0429;
+        internal const int LOCALE_EN_US = 0x0409;
+        internal const int LOCALE_DV_MV = 0x0465;
 
         private static CultureInfo InitializeUserDefaultCulture()
         {
@@ -177,7 +172,7 @@ namespace System.Globalization
             }
 
             _cultureData = cultureData;
-            _name = _cultureData.CultureName;
+            _culture = _cultureData.LCID;
             _isInherited = GetType() != typeof(CultureInfo);
         }
 
@@ -185,20 +180,30 @@ namespace System.Globalization
         {
             Debug.Assert(cultureData != null);
             _cultureData = cultureData;
-            _name = cultureData.CultureName;
+            _culture = cultureData.LCID;
             _isReadOnly = isReadOnly;
         }
 
-        private static CultureInfo? CreateCultureInfoNoThrow(string name, bool useUserOverride)
+        private static CultureInfo? CreateCultureInfoNoThrow(int culture, bool useUserOverride)
         {
-            Debug.Assert(name != null);
-            CultureData? cultureData = CultureData.GetCultureData(name, useUserOverride);
+            CultureData? cultureData = CultureData.GetCultureData(culture, useUserOverride);
             if (cultureData == null)
             {
                 return null;
             }
 
             return new CultureInfo(cultureData);
+        }
+
+        private static CultureInfo? CreateCultureInfoNoThrow(string cultureName, bool useUserOverride)
+        {
+            int culture = Interop.Kernel32.DownlevelLocaleNameToLCID(cultureName, 0);
+            if (culture < 0)
+            {
+                return null;
+            }
+
+            return CreateCultureInfoNoThrow(culture, useUserOverride);
         }
 
         public CultureInfo(int culture) : this(culture, true)
@@ -225,11 +230,11 @@ namespace System.Globalization
                     throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
                 default:
                     // Now see if this LCID is supported in the system default CultureData table.
-                    _cultureData = CultureData.GetCultureData(culture, useUserOverride);
+                    _cultureData = CultureData.GetCultureData(culture, useUserOverride) ??
+                        throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
                     break;
             }
             _isInherited = GetType() != typeof(CultureInfo);
-            _name = _cultureData.CultureName;
         }
 
         /// <summary>
@@ -252,7 +257,7 @@ namespace System.Globalization
 
             _cultureData = cultureData;
 
-            _name = _cultureData.CultureName;
+            _culture = _cultureData.LCID;
 
             CultureInfo altCulture = GetCultureInfo(textAndCompareCultureName);
             _compareInfo = altCulture.CompareInfo;
@@ -268,6 +273,25 @@ namespace System.Globalization
             try
             {
                 return new CultureInfo(name)
+                {
+                    _isReadOnly = true
+                };
+            }
+            catch (ArgumentException)
+            {
+                return InvariantCulture;
+            }
+        }
+
+        /// <summary>
+        /// We do this to try to return the system UI language and the default user languages
+        /// This method will fallback if this fails (like Invariant)
+        /// </summary>
+        private static CultureInfo GetCultureByLcid(int lcid)
+        {
+            try
+            {
+                return new CultureInfo(lcid)
                 {
                     _isReadOnly = true
                 };
@@ -331,7 +355,7 @@ namespace System.Globalization
                 return culture;
             }
 
-            return new CultureInfo(culture._cultureData.SpecificCultureName);
+            return new CultureInfo(culture._cultureData.LCID);
         }
 
         internal static bool VerifyCultureName(string cultureName, bool throwException)
@@ -494,51 +518,15 @@ namespace System.Globalization
                 if (_parent == null)
                 {
                     CultureInfo culture;
-                    string parentName = _cultureData.ParentName;
+                    int parentLcid = _cultureData.ParentLCID;
 
-                    if (parentName == "zh")
-                    {
-                        if (_name.Length == 5 && _name[2] == '-')
-                        {
-                            // We need to keep the parent chain for the zh cultures as follows to preserve the resource lookup compatability
-                            //      zh-CN -> zh-Hans -> zh -> Invariant
-                            //      zh-HK -> zh-Hant -> zh -> Invariant
-                            //      zh-MO -> zh-Hant -> zh -> Invariant
-                            //      zh-SG -> zh-Hans -> zh -> Invariant
-                            //      zh-TW -> zh-Hant -> zh -> Invariant
-
-                            if ((_name[3] == 'C' && _name[4] == 'N' ) || // zh-CN
-                                (_name[3] == 'S' && _name[4] == 'G' ))   // zh-SG
-                            {
-                                parentName = "zh-Hans";
-                            }
-                            else if ((_name[3] == 'H' && _name[4] == 'K' ) ||   // zh-HK
-                                    (_name[3] == 'M' && _name[4] == 'O' ) ||    // zh-MO
-                                    (_name[3] == 'T' && _name[4] == 'W' ))      // zh-TW
-                            {
-                                parentName = "zh-Hant";
-                            }
-                        }
-                        else if (_name.Length > 8 && _name.AsSpan(2, 4).Equals("-Han", StringComparison.Ordinal) &&  _name[7] == '-') // cultures like zh-Hant-* and zh-Hans-*
-                        {
-                            if (_name[6] == 't') // zh-Hant-*
-                            {
-                                parentName = "zh-Hant";
-                            }
-                            else if (_name[6] == 's') // zh-Hans-*
-                            {
-                                parentName = "zh-Hans";
-                            }
-                        }
-                    }
-
-                    if (string.IsNullOrEmpty(parentName))
+                    if (parentLcid == LOCALE_INVARIANT)
                     {
                         culture = InvariantCulture;
                     }
                     else
                     {
-                        culture = CreateCultureInfoNoThrow(parentName, _cultureData.UseUserOverride) ??
+                        culture = CreateCultureInfoNoThrow(parentLcid, _cultureData.UseUserOverride) ??
                             // For whatever reason our IPARENT or SPARENT wasn't correct, so use invariant
                             // We can't allow ourselves to fail.  In case of custom cultures the parent of the
                             // current custom culture isn't installed.
@@ -570,12 +558,12 @@ namespace System.Globalization
         /// Returns the full name of the CultureInfo. The name is in format like
         /// "en-US" This version does NOT include sort information in the name.
         /// </summary>
-        public virtual string Name => _nonSortName ??= (_cultureData.Name ?? string.Empty);
+        public virtual string Name => CultureInfo.NlsLCIDToLocalName(_cultureData.LANGID);
 
         /// <summary>
         /// This one has the sort information (ie: de-DE_phoneb)
         /// </summary>
-        internal string SortName => _sortName ??= _cultureData.SortName;
+        internal int SortId => _cultureData.SortId;
 
         public string IetfLanguageTag =>
                 // special case the compatibility cultures
@@ -595,7 +583,6 @@ namespace System.Globalization
         {
             get
             {
-                Debug.Assert(_name != null, "[CultureInfo.DisplayName] Always expect _name to be set");
                 return _cultureData.DisplayName;
             }
         }
@@ -636,7 +623,7 @@ namespace System.Globalization
         public virtual CompareInfo CompareInfo => _compareInfo ??=
             // Since CompareInfo's don't have any overrideable properties, get the CompareInfo from
             // the Non-Overridden CultureInfo so that we only create one CompareInfo per culture
-            (UseUserOverride ? GetCultureInfo(_name).CompareInfo : new CompareInfo(this));
+            (UseUserOverride ? GetCultureInfo(_culture).CompareInfo : new CompareInfo(this));
 
         /// <summary>
         /// Gets the TextInfo for this culture.
@@ -682,7 +669,7 @@ namespace System.Globalization
         /// Implements object.ToString(). Returns the name of the CultureInfo,
         /// eg. "de-DE_phoneb", "en-US", or "fj-FJ".
         /// </summary>
-        public override string ToString() => _name;
+        public override string ToString() => Name;
 
         public virtual object? GetFormat(Type? formatType)
         {
@@ -784,9 +771,6 @@ namespace System.Globalization
         public void ClearCachedData()
         {
             // reset the default culture values
-#if TARGET_WINDOWS
-            UserDefaultLocaleName = GetUserDefaultLocaleName();
-#endif
             s_userDefaultCulture = GetUserDefaultCulture();
             s_userDefaultUICulture = GetUserDefaultUICulture();
 
@@ -1100,7 +1084,7 @@ namespace System.Globalization
 
             // Remember our name as constructed.  Do NOT use alternate sort name versions because
             // we have internal state representing the sort (so someone would get the wrong cached version).
-            name = CultureData.AnsiToLower(result._name);
+            name = CultureData.AnsiToLower(result.Name);
 
             lock (nameTable)
             {
@@ -1168,9 +1152,7 @@ namespace System.Globalization
 
             if (predefinedOnly && !GlobalizationMode.Invariant)
             {
-                return GlobalizationMode.UseNls ?
-                    NlsGetPredefinedCultureInfo(name) :
-                    IcuGetPredefinedCultureInfo(name);
+                return NlsGetPredefinedCultureInfo(name);
             }
 
             return GetCultureInfo(name);

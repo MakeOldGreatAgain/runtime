@@ -85,6 +85,7 @@ if(CLR_CMAKE_HOST_WIN32)
         version.lib
         ntdll.lib
         ${STATIC_MD_CRT_LIB}
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 
     target_link_libraries(mscordbi ${COREDBI_LIBRARIES})

@@ -16,7 +16,7 @@ namespace System.Globalization
             Debug.Assert(GlobalizationMode.UseNls);
 
             return GlobalizationMode.Invariant ? Invariant.iTwoDigitYearMax :
-                    CallGetCalendarInfoEx(null, calendarId, CAL_ITWODIGITYEARMAX, out int twoDigitYearMax) ?
+                    CallGetCalendarInfo(CultureInfo.LOCALE_USER_DEFAULT, calendarId, CAL_ITWODIGITYEARMAX, out int twoDigitYearMax) ?
                         twoDigitYearMax :
                         -1;
         }
@@ -27,7 +27,7 @@ namespace System.Globalization
             Debug.Assert(GlobalizationMode.UseNls);
 
             // Taiwanese calendar get listed as one of the optional zh-TW calendars only when having zh-TW UI
-            return CallGetCalendarInfoEx("zh-TW", CalendarId.TAIWAN, CAL_SCALNAME, out string _);
+            return CallGetCalendarInfo(CultureInfo.LOCALE_ZH_TW, CalendarId.TAIWAN, CAL_SCALNAME, out string _);
         }
 
         // PAL Layer ends here
@@ -36,19 +36,19 @@ namespace System.Globalization
         private const uint CAL_SCALNAME = 0x00000002;
         private const uint CAL_ITWODIGITYEARMAX = 0x00000030;
 
-        private static bool CallGetCalendarInfoEx(string? localeName, CalendarId calendar, uint calType, out int data)
+        private static bool CallGetCalendarInfo(int culture, CalendarId calendar, uint calType, out int data)
         {
-            return Interop.Kernel32.GetCalendarInfoEx(localeName, (uint)calendar, IntPtr.Zero, calType | CAL_RETURN_NUMBER, IntPtr.Zero, 0, out data) != 0;
+            return Interop.Kernel32.GetCalendarInfo(culture, (uint)calendar, calType | CAL_RETURN_NUMBER, IntPtr.Zero, 0, out data) != 0;
         }
 
-        private static unsafe bool CallGetCalendarInfoEx(string localeName, CalendarId calendar, uint calType, out string data)
+        private static unsafe bool CallGetCalendarInfo(int culture, CalendarId calendar, uint calType, out string data)
         {
             const int BUFFER_LENGTH = 80;
 
             // The maximum size for values returned from GetCalendarInfoEx is 80 characters.
             char* buffer = stackalloc char[BUFFER_LENGTH];
 
-            int ret = Interop.Kernel32.GetCalendarInfoEx(localeName, (uint)calendar, IntPtr.Zero, calType, (IntPtr)buffer, BUFFER_LENGTH, IntPtr.Zero);
+            int ret = Interop.Kernel32.GetCalendarInfo(culture, (uint)calendar, calType, (IntPtr)buffer, BUFFER_LENGTH, IntPtr.Zero);
             if (ret > 0)
             {
                 if (buffer[ret - 1] == '\0')
@@ -69,11 +69,14 @@ namespace System.Globalization
             public List<string>? strings;
         }
 
+        private static object _enumDataCallbackLock = new object();
+        private static unsafe void* _enumDataCallbackContext;
+
         // EnumCalendarInfoExEx callback itself.
         [UnmanagedCallersOnly]
-        private static unsafe Interop.BOOL EnumCalendarInfoCallback(char* lpCalendarInfoString, uint calendar, IntPtr pReserved, void* lParam)
+        private static unsafe Interop.BOOL EnumCalendarInfoCallback(char* lpCalendarInfoString, uint calendar)
         {
-            ref EnumData context = ref Unsafe.As<byte, EnumData>(ref *(byte*)lParam);
+            ref EnumData context = ref Unsafe.As<byte, EnumData>(ref *(byte*)_enumDataCallbackContext);
             try
             {
                 string calendarInfo = new string(lpCalendarInfoString);
@@ -103,9 +106,9 @@ namespace System.Globalization
         }
 
         [UnmanagedCallersOnly]
-        private static unsafe Interop.BOOL EnumCalendarsCallback(char* lpCalendarInfoString, uint calendar, IntPtr reserved, void* lParam)
+        private static unsafe Interop.BOOL EnumCalendarsCallback(char* lpCalendarInfoString, uint calendar)
         {
-            ref NlsEnumCalendarsData context = ref Unsafe.As<byte, NlsEnumCalendarsData>(ref *(byte*)lParam);
+            ref NlsEnumCalendarsData context = ref Unsafe.As<byte, NlsEnumCalendarsData>(ref *(byte*)_enumDataCallbackContext);
             try
             {
                 // If we had a user override, check to make sure this differs

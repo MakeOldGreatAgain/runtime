@@ -29,27 +29,27 @@ EXPORTS
         MetaDataGetDispenser
 
         ; XP Wrappers
-        FlushProcessWriteBuffers
-        GetCurrentProcessorNumber
-        GetCurrentProcessorNumberEx
-        GetActiveProcessorCount
-        GetThreadIdealProcessorEx
-        SetThreadIdealProcessorEx
-        GetThreadId
-        GetThreadGroupAffinity
-        SetThreadGroupAffinity
-        GetTickCount64
-        QueryThreadCycleTime
-        VirtualAllocExNuma
-        GetNumaProcessorNodeEx
-        GetNumaNodeProcessorMaskEx
-        LCIDToLocaleName
-        LocaleNameToLCID
-        GetLocaleInfoEx
-        LCMapStringEx
-        RaiseFailFastException=RaiseFailFastExceptionXP
-        GetFileVersionInfoExW=GetFileVersionInfoExWXP
-        GetFileVersionInfoSizeExW=GetFileVersionInfoSizeExWXP
-        CancelIoEx=CancelIoExXP
-        CopyContext=CopyContextXP
-        InitializeContext=InitializeContextXP
+        ; FlushProcessWriteBuffers
+        ; GetCurrentProcessorNumber
+        ; GetCurrentProcessorNumberEx
+        ; GetActiveProcessorCount
+        ; GetThreadIdealProcessorEx
+        ; SetThreadIdealProcessorEx
+        ; GetThreadId
+        ; GetThreadGroupAffinity
+        ; SetThreadGroupAffinity
+        ; GetTickCount64
+        ; QueryThreadCycleTime
+        ; VirtualAllocExNuma
+        ; GetNumaProcessorNodeEx
+        ; GetNumaNodeProcessorMaskEx
+        FindNLSString
+        CompareStringOrdinal
+        FindStringOrdinal
+        IsNLSDefinedString
+        ; RaiseFailFastException=RaiseFailFastExceptionXP
+        ; GetFileVersionInfoExW=GetFileVersionInfoExWXP
+        ; GetFileVersionInfoSizeExW=GetFileVersionInfoSizeExWXP
+        ; CancelIoEx=CancelIoExXP
+        ; CopyContext=CopyContextXP
+        ; InitializeContext=InitializeContextXP

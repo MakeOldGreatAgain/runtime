@@ -44,99 +44,25 @@ namespace System.Globalization
         {
             Debug.Assert(!GlobalizationMode.Invariant);
 
-            int result;
-            string realNameBuffer = _sRealName;
-            char* pBuffer = stackalloc char[Interop.Kernel32.LOCALE_NAME_MAX_LENGTH];
-
-            result = GetLocaleInfoEx(realNameBuffer, Interop.Kernel32.LOCALE_SNAME, pBuffer, Interop.Kernel32.LOCALE_NAME_MAX_LENGTH);
-
-            // Did it fail?
-            if (result == 0)
-            {
-                return false;
-            }
-
-            // It worked, note that the name is the locale name, so use that (even for neutrals)
-            // We need to clean up our "real" name, which should look like the windows name right now
-            // so overwrite the input with the cleaned up name
-            _sRealName = new string(pBuffer, 0, result - 1);
-            realNameBuffer = _sRealName;
-
-            // Check for neutrality, don't expect to fail
-            // (buffer has our name in it, so we don't have to do the gc. stuff)
-
-            result = GetLocaleInfoEx(realNameBuffer, Interop.Kernel32.LOCALE_INEUTRAL | Interop.Kernel32.LOCALE_RETURN_NUMBER, pBuffer, sizeof(int) / sizeof(char));
-            if (result == 0)
-            {
-                return false;
-            }
-
-            // Remember our neutrality
-            _bNeutral = *((uint*)pBuffer) != 0;
-
             // Note: Parents will be set dynamically
 
             // Start by assuming the windows name will be the same as the specific name since windows knows
             // about specifics on all versions. Only for downlevel Neutral locales does this have to change.
-            _sWindowsName = realNameBuffer;
 
-            // Neutrals and non-neutrals are slightly different
-            if (_bNeutral)
-            {
-                // Neutral Locale
+            // Specific Locale
 
-                // IETF name looks like neutral name
-                _sName = realNameBuffer;
+            // Specific culture's the same as the locale name since we know its not neutral
+            // On mac we'll use this as well, even for neutrals. There's no obvious specific
+            // culture to use and this isn't exposed, but behaviorally this is correct on mac.
+            // Note that specifics include the sort name (de-DE_phoneb)
+            _iSpecificCulture = _iLcid;
 
-                // Specific locale name is whatever ResolveLocaleName (win7+) returns.
-                // (Buffer has our name in it, and we can recycle that because windows resolves it before writing to the buffer)
-                result = Interop.Kernel32.ResolveLocaleName(realNameBuffer, pBuffer, Interop.Kernel32.LOCALE_NAME_MAX_LENGTH);
+            // We need the IETF name (sname)
+            // If we aren't an alt sort locale then this is the same as the windows name.
+            // If we are an alt sort locale then this is the same as the part before the _ in the windows name
+            // This is for like de-DE_phoneb and es-ES_tradnl that hsouldn't have the _ part
 
-                // 0 is failure, 1 is invariant (""), which we expect
-                if (result < 1)
-                {
-                    return false;
-                }
-
-                // We found a locale name, so use it.
-                // In vista this should look like a sort name (de-DE_phoneb) or a specific culture (en-US) and be in the "pretty" form
-                _sSpecificCulture = new string(pBuffer, 0, result - 1);
-            }
-            else
-            {
-                // Specific Locale
-
-                // Specific culture's the same as the locale name since we know its not neutral
-                // On mac we'll use this as well, even for neutrals. There's no obvious specific
-                // culture to use and this isn't exposed, but behaviorally this is correct on mac.
-                // Note that specifics include the sort name (de-DE_phoneb)
-                _sSpecificCulture = realNameBuffer;
-
-                _sName = realNameBuffer;
-
-                // We need the IETF name (sname)
-                // If we aren't an alt sort locale then this is the same as the windows name.
-                // If we are an alt sort locale then this is the same as the part before the _ in the windows name
-                // This is for like de-DE_phoneb and es-ES_tradnl that hsouldn't have the _ part
-
-                result = GetLocaleInfoEx(realNameBuffer, Interop.Kernel32.LOCALE_ILANGUAGE | Interop.Kernel32.LOCALE_RETURN_NUMBER, pBuffer, sizeof(int) / sizeof(char));
-                if (result == 0)
-                {
-                    return false;
-                }
-
-                _iLanguage = *((int*)pBuffer);
-
-                if (!IsCustomCultureId(_iLanguage))
-                {
-                    // not custom locale
-                    int index = realNameBuffer.IndexOf('_');
-                    if (index > 0)
-                    {
-                        _sName = realNameBuffer.Substring(0, index);
-                    }
-                }
-            }
+            _iLanguage = GetLocaleInfoInt(_iLcid, Interop.Kernel32.LOCALE_ILANGUAGE);
 
             // It succeeded.
             return true;
@@ -144,8 +70,7 @@ namespace System.Globalization
 
         private void InitUserOverride(bool useUserOverride)
         {
-            Debug.Assert(_sWindowsName != null, "[CultureData.InitUserOverride] Expected _sWindowsName to be populated by already");
-            _bUseOverrides = useUserOverride && _sWindowsName == CultureInfo.UserDefaultLocaleName;
+            _bUseOverrides = useUserOverride && _iLcid == CultureInfo.LOCALE_USER_DEFAULT;
         }
 
         internal static bool IsWin32Installed => true;
@@ -166,7 +91,7 @@ namespace System.Globalization
                 if (geoIsoIdLength != 0)
                 {
                     geoIsoIdLength -= geoIso2Letters[geoIsoIdLength - 1] == 0 ? 1 : 0; // handle null termination and exclude it.
-                    CultureData? cd = GetCultureDataForRegion(geoIso2Letters.Slice(0, geoIsoIdLength).ToString(), true);
+                    CultureData? cd = GetCultureDataForRegion(int.Parse(geoIso2Letters.Slice(0, geoIsoIdLength), NumberStyles.HexNumber), true);
                     if (cd != null)
                     {
                         return cd;
@@ -178,56 +103,21 @@ namespace System.Globalization
             return CultureInfo.CurrentCulture._cultureData;
         }
 
-        private static unsafe string? LCIDToLocaleName(int culture)
-        {
-            Debug.Assert(!GlobalizationMode.Invariant);
-
-            char* pBuffer = stackalloc char[Interop.Kernel32.LOCALE_NAME_MAX_LENGTH + 1]; // +1 for the null termination
-            int length = Interop.Kernel32.LCIDToLocaleName(culture, pBuffer, Interop.Kernel32.LOCALE_NAME_MAX_LENGTH + 1, Interop.Kernel32.LOCALE_ALLOW_NEUTRAL_NAMES);
-
-            if (length > 0)
-            {
-                return new string(pBuffer);
-            }
-
-            return null;
-        }
-
         private string[]? GetTimeFormatsCore(bool shortFormat)
         {
-            Debug.Assert(_sWindowsName != null, "[CultureData.GetTimeFormatsCore] Expected _sWindowsName to be populated by already");
-
-            if (GlobalizationMode.UseNls)
-            {
-                return ReescapeWin32Strings(nativeEnumTimeFormats(_sWindowsName, shortFormat ? Interop.Kernel32.TIME_NOSECONDS : 0, _bUseOverrides));
-            }
-
-            string icuFormatString = IcuGetTimeFormatString(shortFormat);
-
-            if (!_bUseOverrides)
-            {
-                return new string[] { icuFormatString };
-            }
-
-            // When using ICU and need to get user overrides, we put the user override at the beginning
-            string userOverride = GetLocaleInfoFromLCType(_sWindowsName, shortFormat ? Interop.Kernel32.LOCALE_SSHORTTIME : Interop.Kernel32.LOCALE_STIMEFORMAT, useUserOverride: true);
-
-            Debug.Assert(!string.IsNullOrEmpty(userOverride));
-
-            return userOverride != icuFormatString ?
-                 new string[] { userOverride, icuFormatString } : new string[] { userOverride };
+            return ReescapeWin32Strings(nativeEnumTimeFormats(LCID, shortFormat ? Interop.Kernel32.TIME_NOSECONDS : 0, _bUseOverrides));
         }
 
-        private int GetAnsiCodePage(string cultureName) =>
+        private int GetAnsiCodePage(int culture) =>
             NlsGetLocaleInfo(LocaleNumberData.AnsiCodePage);
 
-        private int GetOemCodePage(string cultureName) =>
+        private int GetOemCodePage(int culture) =>
             NlsGetLocaleInfo(LocaleNumberData.OemCodePage);
 
-        private int GetMacCodePage(string cultureName) =>
+        private int GetMacCodePage(int culture) =>
             NlsGetLocaleInfo(LocaleNumberData.MacCodePage);
 
-        private int GetEbcdicCodePage(string cultureName) =>
+        private int GetEbcdicCodePage(int culture) =>
             NlsGetLocaleInfo(LocaleNumberData.EbcdicCodePage);
 
         // If we are using ICU and loading the calendar data for the user's default

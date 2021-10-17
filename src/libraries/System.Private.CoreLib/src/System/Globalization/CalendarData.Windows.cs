@@ -31,37 +31,10 @@ namespace System.Globalization
         private const uint LOCALE_SLONGDATE = 0x00000020;
         private const uint LOCALE_SYEARMONTH = 0x00001006;
 
-        private bool LoadCalendarDataFromSystemCore(string localeName, CalendarId calendarId)
+        private bool LoadCalendarDataFromSystemCore(int culture, CalendarId calendarId)
         {
             Debug.Assert(!GlobalizationMode.Invariant);
-
-            if (GlobalizationMode.UseNls)
-            {
-                return NlsLoadCalendarDataFromSystem(localeName, calendarId);
-            }
-
-            // If running using ICU on Windows we should honor user overrides using NLS and the rest from ICU
-            bool result = IcuLoadCalendarDataFromSystem(localeName, calendarId);
-
-            if (result && bUseUserOverrides)
-            {
-                NormalizeCalendarId(ref calendarId, ref localeName);
-                result &= CallGetCalendarInfoEx(localeName, calendarId, CAL_ITWODIGITYEARMAX, out this.iTwoDigitYearMax);
-
-                // They want user overrides, see if the user calendar matches the input calendar
-                CalendarId userCalendar = (CalendarId)CultureData.GetLocaleInfoExInt(localeName, LOCALE_ICALENDARTYPE);
-
-                // If the calendars were the same, see if the locales were the same
-                if (userCalendar == calendarId)
-                {
-                    string? shortDateOverride = CultureData.ReescapeWin32String(CultureData.GetLocaleInfoEx(localeName, LOCALE_SSHORTDATE));
-                    string? longDateOverride = CultureData.ReescapeWin32String(CultureData.GetLocaleInfoEx(localeName, LOCALE_SLONGDATE));
-                    InsertOrSwapOverride(shortDateOverride, ref this.saShortDates);
-                    InsertOrSwapOverride(longDateOverride, ref this.saLongDates);
-                }
-            }
-
-            return result;
+            return NlsLoadCalendarDataFromSystem(culture, calendarId);
         }
 
         private void InsertOrSwapOverride(string? value, ref string[] destination)
@@ -90,59 +63,59 @@ namespace System.Globalization
             destination = newArray;
         }
 
-        private bool NlsLoadCalendarDataFromSystem(string localeName, CalendarId calendarId)
+        private bool NlsLoadCalendarDataFromSystem(int culture, CalendarId calendarId)
         {
             bool ret = true;
 
             uint useOverrides = bUseUserOverrides ? 0 : CAL_NOUSEROVERRIDE;
 
-            NormalizeCalendarId(ref calendarId, ref localeName);
+            NormalizeCalendarId(ref calendarId, ref culture);
 
             // Numbers
-            ret &= CallGetCalendarInfoEx(localeName, calendarId, CAL_ITWODIGITYEARMAX | useOverrides, out this.iTwoDigitYearMax);
+            ret &= CallGetCalendarInfo(culture, calendarId, CAL_ITWODIGITYEARMAX | useOverrides, out this.iTwoDigitYearMax);
 
             // Strings
-            ret &= CallGetCalendarInfoEx(localeName, calendarId, CAL_SCALNAME, out this.sNativeName);
-            ret &= CallGetCalendarInfoEx(localeName, calendarId, CAL_SMONTHDAY, out this.sMonthDay);
+            ret &= CallGetCalendarInfo(culture, calendarId, CAL_SCALNAME, out this.sNativeName);
+            ret &= CallGetCalendarInfo(culture, calendarId, CAL_SMONTHDAY, out this.sMonthDay);
 
             // String Arrays
             // Formats
-            ret &= CallEnumCalendarInfo(localeName, calendarId, CAL_SSHORTDATE, LOCALE_SSHORTDATE | useOverrides, out this.saShortDates!);
-            ret &= CallEnumCalendarInfo(localeName, calendarId, CAL_SLONGDATE, LOCALE_SLONGDATE | useOverrides, out this.saLongDates!);
+            ret &= CallEnumCalendarInfo(culture, calendarId, CAL_SSHORTDATE, LOCALE_SSHORTDATE | useOverrides, out this.saShortDates!);
+            ret &= CallEnumCalendarInfo(culture, calendarId, CAL_SLONGDATE, LOCALE_SLONGDATE | useOverrides, out this.saLongDates!);
 
             // Get the YearMonth pattern.
-            ret &= CallEnumCalendarInfo(localeName, calendarId, CAL_SYEARMONTH, LOCALE_SYEARMONTH, out this.saYearMonths!);
+            ret &= CallEnumCalendarInfo(culture, calendarId, CAL_SYEARMONTH, LOCALE_SYEARMONTH, out this.saYearMonths!);
 
             // Day & Month Names
             // These are all single calType entries, 1 per day, so we have to make 7 or 13 calls to collect all the names
 
             // Day
             // Note that we're off-by-one since managed starts on sunday and windows starts on monday
-            ret &= GetCalendarDayInfo(localeName, calendarId, CAL_SDAYNAME7, out this.saDayNames);
-            ret &= GetCalendarDayInfo(localeName, calendarId, CAL_SABBREVDAYNAME7, out this.saAbbrevDayNames);
+            ret &= GetCalendarDayInfo(culture, calendarId, CAL_SDAYNAME7, out this.saDayNames);
+            ret &= GetCalendarDayInfo(culture, calendarId, CAL_SABBREVDAYNAME7, out this.saAbbrevDayNames);
 
             // Month names
-            ret &= GetCalendarMonthInfo(localeName, calendarId, CAL_SMONTHNAME1, out this.saMonthNames);
-            ret &= GetCalendarMonthInfo(localeName, calendarId, CAL_SABBREVMONTHNAME1, out this.saAbbrevMonthNames);
+            ret &= GetCalendarMonthInfo(culture, calendarId, CAL_SMONTHNAME1, out this.saMonthNames);
+            ret &= GetCalendarMonthInfo(culture, calendarId, CAL_SABBREVMONTHNAME1, out this.saAbbrevMonthNames);
 
             //
             // The following LCTYPE are not supported in some platforms.  If the call fails,
             // don't return a failure.
             //
-            GetCalendarDayInfo(localeName, calendarId, CAL_SSHORTESTDAYNAME7, out this.saSuperShortDayNames);
+            GetCalendarDayInfo(culture, calendarId, CAL_SSHORTESTDAYNAME7, out this.saSuperShortDayNames);
 
             // Gregorian may have genitive month names
             if (calendarId == CalendarId.GREGORIAN)
             {
-                GetCalendarMonthInfo(localeName, calendarId, CAL_SMONTHNAME1 | CAL_RETURN_GENITIVE_NAMES, out this.saMonthGenitiveNames);
-                GetCalendarMonthInfo(localeName, calendarId, CAL_SABBREVMONTHNAME1 | CAL_RETURN_GENITIVE_NAMES, out this.saAbbrevMonthGenitiveNames);
+                GetCalendarMonthInfo(culture, calendarId, CAL_SMONTHNAME1 | CAL_RETURN_GENITIVE_NAMES, out this.saMonthGenitiveNames);
+                GetCalendarMonthInfo(culture, calendarId, CAL_SABBREVMONTHNAME1 | CAL_RETURN_GENITIVE_NAMES, out this.saAbbrevMonthGenitiveNames);
             }
 
             // Calendar Parts Names
             // This doesn't get always get localized names for gregorian (not available in windows < 7)
             // so: eg: coreclr on win < 7 won't get these
-            CallEnumCalendarInfo(localeName, calendarId, CAL_SERASTRING, 0, out this.saEraNames!);
-            CallEnumCalendarInfo(localeName, calendarId, CAL_SABBREVERASTRING, 0, out this.saAbbrevEraNames!);
+            CallEnumCalendarInfo(culture, calendarId, CAL_SERASTRING, 0, out this.saEraNames!);
+            CallEnumCalendarInfo(culture, calendarId, CAL_SABBREVERASTRING, 0, out this.saAbbrevEraNames!);
 
             //
             // Calendar Era Info
@@ -159,7 +132,7 @@ namespace System.Globalization
             return ret;
         }
 
-        private static void NormalizeCalendarId(ref CalendarId calendarId, ref string localeName)
+        private static void NormalizeCalendarId(ref CalendarId calendarId, ref int culture)
         {
             //
             // Windows doesn't support some calendars right now, so remap those.
@@ -185,7 +158,7 @@ namespace System.Globalization
             // Special handling for some special calendar due to OS limitation.
             // This includes calendar like Taiwan calendar, UmAlQura calendar, etc.
             //
-            CheckSpecialCalendar(ref calendarId, ref localeName);
+            CheckSpecialCalendar(ref calendarId, ref culture);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -203,23 +176,23 @@ namespace System.Globalization
         //    This will be updated to new fallback locale name if needed.
         //
         ////////////////////////////////////////////////////////////////////////
-        private static void CheckSpecialCalendar(ref CalendarId calendar, ref string localeName)
+        private static void CheckSpecialCalendar(ref CalendarId calendar, ref int culture)
         {
             // Gregorian-US isn't always available in the OS, however it is the same for all locales
             switch (calendar)
             {
                 case CalendarId.GREGORIAN_US:
                     // See if this works
-                    if (!CallGetCalendarInfoEx(localeName, calendar, CAL_SCALNAME, out string _))
+                    if (!CallGetCalendarInfo(culture, calendar, CAL_SCALNAME, out string _))
                     {
                         // Failed, set it to a locale (fa-IR) that's alway has Gregorian US available in the OS
-                        localeName = "fa-IR";
+                        culture = CultureInfo.LOCALE_FA_IR;
 
                         // See if that works
-                        if (!CallGetCalendarInfoEx(localeName, calendar, CAL_SCALNAME, out string _))
+                        if (!CallGetCalendarInfo(culture, calendar, CAL_SCALNAME, out string _))
                         {
                             // Failed again, just use en-US with the gregorian calendar
-                            localeName = "en-US";
+                            culture = CultureInfo.LOCALE_EN_US;
                             calendar = CalendarId.GREGORIAN;
                         }
                     }
@@ -236,7 +209,7 @@ namespace System.Globalization
             }
         }
 
-        private static unsafe bool CallEnumCalendarInfo(string localeName, CalendarId calendar, uint calType, uint lcType, out string[]? data)
+        private static unsafe bool CallEnumCalendarInfo(int culture, CalendarId calendar, uint calType, uint lcType, out string[]? data)
         {
             EnumData context = default;
             context.userOverride = null;
@@ -245,13 +218,13 @@ namespace System.Globalization
             if ((lcType != 0) && ((lcType & CAL_NOUSEROVERRIDE) == 0))
             {
                 // They want user overrides, see if the user calendar matches the input calendar
-                CalendarId userCalendar = (CalendarId)CultureData.GetLocaleInfoExInt(localeName, LOCALE_ICALENDARTYPE);
+                CalendarId userCalendar = (CalendarId)CultureData.GetLocaleInfoInt(culture, LOCALE_ICALENDARTYPE);
 
                 // If the calendars were the same, see if the locales were the same
                 if (userCalendar == calendar)
                 {
                     // They matched, get the user override since locale & calendar match
-                    string? res = CultureData.GetLocaleInfoEx(localeName, lcType);
+                    string? res = CultureData.GetLocaleInfo(culture, lcType);
 
                     // if it succeeded remember the override for the later callers
                     if (res != null)
@@ -266,7 +239,12 @@ namespace System.Globalization
             }
 
             // Now call the enumeration API. Work is done by our callback function
-            Interop.Kernel32.EnumCalendarInfoExEx(&EnumCalendarInfoCallback, localeName, (uint)calendar, null, calType, Unsafe.AsPointer(ref context));
+
+            lock (_enumDataCallbackLock)
+            {
+                _enumDataCallbackContext = Unsafe.AsPointer(ref context);
+                Interop.Kernel32.EnumCalendarInfoEx(&EnumCalendarInfoCallback, culture, (uint)calendar, calType);
+            }
 
             // Now we have a list of data, fail if we didn't find anything.
             Debug.Assert(context.strings != null);
@@ -302,7 +280,7 @@ namespace System.Globalization
         //      OUT pOutputStrings      The output string[] value.
         //
         ////////////////////////////////////////////////////////////////////////
-        private static bool GetCalendarDayInfo(string localeName, CalendarId calendar, uint calType, out string[] outputStrings)
+        private static bool GetCalendarDayInfo(int culture, CalendarId calendar, uint calType, out string[] outputStrings)
         {
             bool result = true;
 
@@ -314,7 +292,7 @@ namespace System.Globalization
             // Get each one of them
             for (int i = 0; i < 7; i++, calType++)
             {
-                result &= CallGetCalendarInfoEx(localeName, calendar, calType, out results[i]);
+                result &= CallGetCalendarInfo(culture, calendar, calType, out results[i]);
 
                 // On the first iteration we need to go from CAL_SDAYNAME7 to CAL_SDAYNAME1, so subtract 7 before the ++ happens
                 // This is because the framework starts on sunday and windows starts on monday when counting days
@@ -335,7 +313,7 @@ namespace System.Globalization
         //      OUT pOutputStrings      The output string[] value.
         //
         ////////////////////////////////////////////////////////////////////////
-        private static bool GetCalendarMonthInfo(string localeName, CalendarId calendar, uint calType, out string[] outputStrings)
+        private static bool GetCalendarMonthInfo(int culture, CalendarId calendar, uint calType, out string[] outputStrings)
         {
             //
             // We'll need a new array of 13 items
@@ -345,7 +323,7 @@ namespace System.Globalization
             // Get each one of them
             for (int i = 0; i < 13; i++, calType++)
             {
-                if (!CallGetCalendarInfoEx(localeName, calendar, calType, out results[i]))
+                if (!CallGetCalendarInfo(culture, calendar, calType, out results[i]))
                     results[i] = "";
             }
 
@@ -354,49 +332,13 @@ namespace System.Globalization
             return true;
         }
 
-        internal static int GetCalendarsCore(string localeName, bool useUserOverride, CalendarId[] calendars)
+        internal static int GetCalendarsCore(int culture, bool useUserOverride, CalendarId[] calendars)
         {
             Debug.Assert(!GlobalizationMode.Invariant);
-
-            if (GlobalizationMode.UseNls)
-            {
-                return NlsGetCalendars(localeName, useUserOverride, calendars);
-            }
-
-            int count = IcuGetCalendars(localeName, calendars);
-
-            if (useUserOverride)
-            {
-                // They want user overrides, see if the user calendar matches the input calendar
-                int userCalendar = CultureData.GetLocaleInfoExInt(localeName, LOCALE_ICALENDARTYPE);
-
-                if (userCalendar != 0 && (CalendarId)userCalendar != calendars[0])
-                {
-                    CalendarId userOverride = (CalendarId)userCalendar;
-                    for (int i = 1; i < calendars.Length; i++)
-                    {
-                        if (calendars[i] == userOverride)
-                        {
-                            CalendarId tmp = calendars[0];
-                            calendars[0] = userOverride;
-                            calendars[i] = tmp;
-                            return count;
-                        }
-                    }
-
-                    // We didn't find it, we insert it at the beginning of the array. If calendar's array is full, we drop the last element.
-                    count = count < calendars.Length ? count + 1 : count;
-                    Span<CalendarId> tmpSpan = stackalloc CalendarId[count]; // should be 23 max.
-                    tmpSpan[0] = userOverride;
-                    calendars.AsSpan().Slice(0, count - 1).CopyTo(tmpSpan.Slice(1));
-                    tmpSpan.CopyTo(calendars);
-                }
-            }
-
-            return count;
+            return NlsGetCalendars(culture, useUserOverride, calendars);
         }
 
-        private static int NlsGetCalendars(string localeName, bool useUserOverride, CalendarId[] calendars)
+        private static int NlsGetCalendars(int culture, bool useUserOverride, CalendarId[] calendars)
         {
             NlsEnumCalendarsData data = default;
             data.userOverride = 0;
@@ -406,7 +348,7 @@ namespace System.Globalization
             if (useUserOverride)
             {
                 // They want user overrides, see if the user calendar matches the input calendar
-                int userCalendar = CultureData.GetLocaleInfoExInt(localeName, LOCALE_ICALENDARTYPE);
+                int userCalendar = CultureData.GetLocaleInfoInt(culture, LOCALE_ICALENDARTYPE);
 
                 // If we got a default, then use it as the first calendar
                 if (userCalendar != 0)
@@ -418,7 +360,11 @@ namespace System.Globalization
 
             unsafe
             {
-                Interop.Kernel32.EnumCalendarInfoExEx(&EnumCalendarsCallback, localeName, ENUM_ALL_CALENDARS, null, CAL_ICALINTVALUE, Unsafe.AsPointer(ref data));
+                lock (_enumDataCallbackLock)
+                {
+                    _enumDataCallbackContext = Unsafe.AsPointer(ref data);
+                    Interop.Kernel32.EnumCalendarInfoEx(&EnumCalendarsCallback, culture, ENUM_ALL_CALENDARS, CAL_ICALINTVALUE);
+                }
             }
 
             // Copy to the output array

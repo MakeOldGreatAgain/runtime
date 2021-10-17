@@ -56,12 +56,6 @@ namespace System.Globalization
         // an index which points to a record in Culture Data Table.
         private readonly CultureData _cultureData;
 
-        // The culture name used to create this DTFI.
-        private string? _name;
-
-        // The language name of the culture used to create this DTFI.
-        private string? _langName;
-
         // CompareInfo usually used by the parser.
         private CompareInfo? _compareInfo;
 
@@ -150,11 +144,11 @@ namespace System.Globalization
 
         private DateTimeFormatFlags formatFlags = DateTimeFormatFlags.NotInitialized;
 
-        private string CultureName => _name ??= _cultureData.CultureName;
+        private CultureInfo Culture => _cultureInfo ??= CultureInfo.GetCultureInfo(_cultureData.LCID);
 
-        private CultureInfo Culture => _cultureInfo ??= CultureInfo.GetCultureInfo(CultureName);
+        private int LanguageId => _cultureData.LANGID;
 
-        private string LanguageName => _langName ??= _cultureData.TwoLetterISOLanguageName;
+        private int LCID => _cultureData.LCID;
 
         /// <summary>
         /// Create an array of string which contains the abbreviated day names.
@@ -1803,7 +1797,7 @@ namespace System.Globalization
         private string? _decimalSeparator;
         internal string DecimalSeparator =>
             _decimalSeparator ??=
-            new NumberFormatInfo(_cultureData.UseUserOverride ? CultureData.GetCultureData(_cultureData.CultureName, false) : _cultureData).NumberDecimalSeparator;
+            new NumberFormatInfo(_cultureData.UseUserOverride ? CultureData.GetCultureData(_cultureData.LCID, false) : _cultureData).NumberDecimalSeparator;
 
         // Positive TimeSpan Pattern
         private string? _fullTimeSpanPositivePattern;
@@ -1819,7 +1813,7 @@ namespace System.Globalization
         internal CompareInfo CompareInfo =>
             // We use the regular GetCompareInfo here to make sure the created CompareInfo object is stored in the
             // CompareInfo cache. otherwise we would just create CompareInfo using _cultureData.
-            _compareInfo ??= CompareInfo.GetCompareInfo(_cultureData.SortName);
+            _compareInfo ??= CompareInfo.GetCompareInfo(_cultureData.SortId);
 
         internal const DateTimeStyles InvalidDateTimeStyles = ~(DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite
                                                                | DateTimeStyles.AllowInnerWhite | DateTimeStyles.NoCurrentDateDefault
@@ -1977,9 +1971,13 @@ namespace System.Globalization
         internal const string GMTName = "GMT";
         internal const string ZuluName = "Z";
 
-        internal const string KoreanLangName = "ko";
-        internal const string JapaneseLangName = "ja";
-        internal const string EnglishLangName = "en";
+        internal const int AlbaniaLangId = 0x001C;
+        internal const int KoreanLangId = 0x0012;
+        internal const int JapaneseLangId = 0x0011;
+        internal const int EnglishLangId = 0x0009;
+        internal const int KyrgyzLangId = 0x0040;
+        internal const int BasqueLangId = 0x002D;
+        internal const int ChineseTaiwanLangId = 0x0404;
 
         private static volatile DateTimeFormatInfo? s_jajpDTFI;
         private static volatile DateTimeFormatInfo? s_zhtwDTFI;
@@ -2054,7 +2052,7 @@ namespace System.Globalization
                 InsertHash(temp, AMDesignator, TokenType.SEP_Am | TokenType.Am, 0);
                 InsertHash(temp, PMDesignator, TokenType.SEP_Pm | TokenType.Pm, 1);
 
-                if (LanguageName.Equals("sq"))
+                if (LanguageId == AlbaniaLangId)
                 {
                     // Albanian allows time formats like "12:00.PD"
                     InsertHash(temp, IgnorablePeriod + AMDesignator, TokenType.SEP_Am | TokenType.Am, 0);
@@ -2084,7 +2082,7 @@ namespace System.Globalization
                 }
 
                 // TODO: This ignores other custom cultures that might want to do something similar
-                if (LanguageName.Equals(KoreanLangName))
+                if (LanguageId.Equals(KoreanLangId))
                 {
                     // Korean suffix
                     InsertHash(temp, KoreanHourSuff, TokenType.SEP_HourSuff, 0);
@@ -2092,7 +2090,7 @@ namespace System.Globalization
                     InsertHash(temp, KoreanSecondSuff, TokenType.SEP_SecondSuff, 0);
                 }
 
-                if (LanguageName.Equals("ky"))
+                if (LanguageId.Equals(KyrgyzLangId))
                 {
                     // For some cultures, the date separator works more like a comma, being allowed before or after any date part
                     InsertHash(temp, dateSeparatorOrTimeZoneOffset, TokenType.IgnorableSymbol, 0);
@@ -2141,7 +2139,7 @@ namespace System.Globalization
                             default:
                                 InsertHash(temp, dateWords[i], TokenType.DateWordToken, 0);
                                 // TODO: This ignores similar custom cultures
-                                if (LanguageName.Equals("eu"))
+                                if (LanguageId.Equals(BasqueLangId))
                                 {
                                     // Basque has date words with leading dots
                                     InsertHash(temp, IgnorablePeriod + dateWords[i], TokenType.DateWordToken, 0);
@@ -2205,7 +2203,7 @@ namespace System.Globalization
 
                 if (!GlobalizationMode.Invariant)
                 {
-                    if (LanguageName.Equals(JapaneseLangName))
+                    if (LanguageId.Equals(JapaneseLangId))
                     {
                         // Japanese allows day of week forms like: "(Tue)"
                         for (int i = 0; i < 7; i++)
@@ -2228,7 +2226,7 @@ namespace System.Globalization
                         }
                     }
                     // TODO: This prohibits similar custom cultures, but we hard coded the name
-                    else if (CultureName.Equals("zh-TW"))
+                    else if (LanguageId.Equals(ChineseTaiwanLangId))
                     {
                         DateTimeFormatInfo twDtfi = GetTaiwanCalendarDTFI();
                         for (int i = 1; i <= twDtfi.Calendar.Eras.Length; i++)

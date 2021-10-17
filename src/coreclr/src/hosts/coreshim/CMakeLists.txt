@@ -21,6 +21,7 @@ target_link_libraries(CoreShim
     version.lib
     ntdll.lib
     ${STATIC_MD_CRT_LIB}
+    ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
 )
 
 install_clr(TARGETS CoreShim)

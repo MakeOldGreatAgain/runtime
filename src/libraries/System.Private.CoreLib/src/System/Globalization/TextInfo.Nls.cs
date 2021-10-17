@@ -20,17 +20,14 @@ namespace System.Globalization
             // Check for Invariant to avoid A/V in LCMapStringEx
             // We don't specify LCMAP_LINGUISTIC_CASING for Invariant because it will enable Turkish-I behavior too which is not
             // right for Invariant.
-            uint linguisticCasing = IsInvariantLocale(_textInfoName) ? 0 : LCMAP_LINGUISTIC_CASING;
+            uint linguisticCasing = IsInvariantLocale(LCID) ? 0 : LCMAP_LINGUISTIC_CASING;
 
-            int ret = Interop.Kernel32.LCMapStringEx(_sortHandle != IntPtr.Zero ? null : _textInfoName,
-                                                     linguisticCasing | (toUpper ? LCMAP_UPPERCASE : LCMAP_LOWERCASE),
-                                                     pSource,
-                                                     pSourceLen,
-                                                     pResult,
-                                                     pSourceLen,
-                                                     null,
-                                                     null,
-                                                     _sortHandle);
+            int ret = Interop.Kernel32.LCMapString(LCID,
+                                                  linguisticCasing | (toUpper ? LCMAP_UPPERCASE : LCMAP_LOWERCASE),
+                                                  pSource,
+                                                  pSourceLen,
+                                                  pResult,
+                                                  pSourceLen);
             if (ret == 0)
             {
                 throw new InvalidOperationException(SR.InvalidOperation_ReadOnly);
@@ -41,12 +38,10 @@ namespace System.Globalization
 
         // PAL Ends here
 
-        private IntPtr _sortHandle;
-
         private const uint LCMAP_LINGUISTIC_CASING = 0x01000000;
         private const uint LCMAP_LOWERCASE = 0x00000100;
         private const uint LCMAP_UPPERCASE = 0x00000200;
 
-        private static bool IsInvariantLocale(string localeName) => localeName == "";
+        private static bool IsInvariantLocale(int culture) => culture == CultureInfo.LOCALE_INVARIANT;
     }
 }

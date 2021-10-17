@@ -361,6 +361,7 @@ else()
        crypt32.lib
        RuntimeObject.lib
        ntdll.lib
+       ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 endif(CLR_CMAKE_HOST_UNIX)
 

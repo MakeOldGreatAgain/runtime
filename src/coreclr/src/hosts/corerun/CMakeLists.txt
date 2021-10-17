@@ -31,6 +31,7 @@ else()
         version.lib
         ntdll.lib
         ${STATIC_MD_CRT_LIB}
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 
     # Can't compile on linux yet so only add for windows

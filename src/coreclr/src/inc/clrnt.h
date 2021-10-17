@@ -1060,4 +1060,11 @@ NtQueryInformationThread(
     IN ULONG ThreadInformationLength,
     OUT OPTIONAL PULONG ReturnLength
 );
+
+EXTERN_C
+NTSYSAPI
+WCHAR
+NTAPI RtlUpcaseUnicodeChar(
+    IN WCHAR SourceCharacter
+);
 #endif  // CLRNT_H_

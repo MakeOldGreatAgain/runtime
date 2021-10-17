@@ -98,13 +98,13 @@ namespace System.Globalization
         //
         // Get a bunch of data for a calendar
         //
-        internal CalendarData(string localeName, CalendarId calendarId, bool bUseUserOverrides)
+        internal CalendarData(int culture, CalendarId calendarId, bool bUseUserOverrides)
         {
             this.bUseUserOverrides = bUseUserOverrides;
 
             Debug.Assert(!GlobalizationMode.Invariant);
 
-            bool loadedCalendarData = LoadCalendarDataFromSystemCore(localeName, calendarId);
+            bool loadedCalendarData = LoadCalendarDataFromSystemCore(culture, calendarId);
 
             if (!loadedCalendarData)
             {
@@ -154,9 +154,9 @@ namespace System.Globalization
             if (this.saLeapYearMonthNames == null || this.saLeapYearMonthNames.Length == 0 || string.IsNullOrEmpty(this.saLeapYearMonthNames[0]))
                 this.saLeapYearMonthNames = this.saMonthNames;
 
-            InitializeEraNames(localeName, calendarId);
+            InitializeEraNames(culture, calendarId);
 
-            InitializeAbbreviatedEraNames(localeName, calendarId);
+            InitializeAbbreviatedEraNames(culture, calendarId);
 
             // Abbreviated English Era Names are only used for the Japanese calendar.
             if (calendarId == CalendarId.JAPAN)
@@ -174,7 +174,7 @@ namespace System.Globalization
             this.iCurrentEra = this.saEraNames.Length;
         }
 
-        private void InitializeEraNames(string localeName, CalendarId calendarId)
+        private void InitializeEraNames(int culture, CalendarId calendarId)
         {
             // Note that the saEraNames only include "A.D."  We don't have localized names for other calendars available from windows
             switch (calendarId)
@@ -198,7 +198,7 @@ namespace System.Globalization
                     break;
                 case CalendarId.HIJRI:
                 case CalendarId.UMALQURA:
-                    if (localeName == "dv-MV")
+                    if (culture == CultureInfo.LOCALE_DV_MV)
                     {
                         // Special case for Divehi
                         this.saEraNames = new string[] { "\x0780\x07a8\x0796\x07b0\x0783\x07a9" };
@@ -257,7 +257,7 @@ namespace System.Globalization
             }
         }
 
-        private void InitializeAbbreviatedEraNames(string localeName, CalendarId calendarId)
+        private void InitializeAbbreviatedEraNames(int culture, CalendarId calendarId)
         {
             // Note that the saAbbrevEraNames only include "AD"  We don't have localized names for other calendars available from windows
             switch (calendarId)
@@ -282,7 +282,7 @@ namespace System.Globalization
                     break;
                 case CalendarId.HIJRI:
                 case CalendarId.UMALQURA:
-                    if (localeName == "dv-MV")
+                    if (culture == CultureInfo.LOCALE_DV_MV)
                     {
                         // Special case for Divehi
                         this.saAbbrevEraNames = new string[] { "\x0780\x002e" };
@@ -384,8 +384,6 @@ namespace System.Globalization
             return "en-US";
         }
 
-        private bool SystemSupportsTaiwaneseCalendar() => GlobalizationMode.UseNls ?
-                                                            NlsSystemSupportsTaiwaneseCalendar() :
-                                                            IcuSystemSupportsTaiwaneseCalendar();
+        private bool SystemSupportsTaiwaneseCalendar() => NlsSystemSupportsTaiwaneseCalendar();
     }
 }

@@ -10,11 +10,7 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return CultureInfo.InvariantCulture;
 
-            string? strDefault = UserDefaultLocaleName;
-
-            return strDefault != null ?
-                GetCultureByName(strDefault) :
-                CultureInfo.InvariantCulture;
+            return GetCultureByLcid(UserDefaultLocaleId);
         }
 
         private static unsafe CultureInfo GetUserDefaultUICulture()
@@ -22,31 +18,14 @@ namespace System.Globalization
             if (GlobalizationMode.Invariant)
                 return CultureInfo.InvariantCulture;
 
-            const uint MUI_LANGUAGE_NAME = 0x8;    // Use ISO language (culture) name convention
-            uint langCount = 0;
-            uint bufLen = 0;
-
-            if (Interop.Kernel32.GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, null, &bufLen) != Interop.BOOL.FALSE)
-            {
-                Span<char> languages = bufLen <= 256 ? stackalloc char[(int)bufLen] : new char[bufLen];
-                fixed (char* pLanguages = languages)
-                {
-                    if (Interop.Kernel32.GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, pLanguages, &bufLen) != Interop.BOOL.FALSE)
-                    {
-                        return GetCultureByName(languages.ToString());
-                    }
-                }
-            }
-
-            return InitializeUserDefaultCulture();
+            return GetCultureByLcid(Interop.Kernel32.GetUserDefaultUILanguage());
         }
 
-        internal static string? UserDefaultLocaleName { get; set; } = GetUserDefaultLocaleName();
+        internal static int UserDefaultLocaleId { get; set; } = GetUserDefaultLocaleId();
 
-        private static string? GetUserDefaultLocaleName() =>
+        private static int GetUserDefaultLocaleId() =>
             GlobalizationMode.Invariant ?
-                CultureInfo.InvariantCulture.Name :
-                CultureData.GetLocaleInfoEx(Interop.Kernel32.LOCALE_NAME_USER_DEFAULT, Interop.Kernel32.LOCALE_SNAME) ??
-                CultureData.GetLocaleInfoEx(Interop.Kernel32.LOCALE_NAME_SYSTEM_DEFAULT, Interop.Kernel32.LOCALE_SNAME);
+                CultureInfo.LOCALE_INVARIANT :
+                Interop.Kernel32.GetUserDefaultLCID();
     }
 }

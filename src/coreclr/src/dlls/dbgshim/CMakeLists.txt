@@ -66,6 +66,7 @@ if(CLR_CMAKE_HOST_WIN32)
         version.lib
         psapi.lib
         ntdll.lib
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 else()
     list(APPEND DBGSHIM_LIBRARIES

@@ -10,13 +10,22 @@ namespace System.Globalization
         private static CultureInfo NlsGetPredefinedCultureInfo(string name)
         {
             Debug.Assert(GlobalizationMode.UseNls);
+            return GetCultureInfo(name);
+        }
 
-            if (CultureData.GetLocaleInfoExInt(name, Interop.Kernel32.LOCALE_ICONSTRUCTEDLOCALE) == 1)
+        internal static unsafe string NlsLCIDToLocalName(int culture)
+        {
+            Debug.Assert(!GlobalizationMode.Invariant);
+
+            char* pBuffer = stackalloc char[Interop.Kernel32.LOCALE_NAME_MAX_LENGTH + 1]; // +1 for the null termination
+            int length = Interop.Kernel32.DownlevelLCIDToLocaleName(culture, pBuffer, Interop.Kernel32.LOCALE_NAME_MAX_LENGTH + 1, Interop.Kernel32.LOCALE_ALLOW_NEUTRAL_NAMES);
+
+            if (length > 0)
             {
-                throw new CultureNotFoundException(nameof(name), SR.Format(SR.Argument_InvalidPredefinedCultureName, name));
+                return new string(pBuffer);
             }
 
-            return GetCultureInfo(name);
+            return string.Empty;
         }
     }
 }

@@ -68,7 +68,8 @@ namespace System.Globalization
                 throw new ArgumentException(SR.Format(SR.Argument_CustomCultureCannotBePassedByNumber, culture), nameof(culture));
             }
 
-            _cultureData = CultureData.GetCultureData(culture, true);
+            _cultureData = CultureData.GetCultureData(culture, true) ??
+                throw new ArgumentException(SR.Format(SR.Argument_InvalidCultureName, culture), nameof(culture));
             _name = _cultureData.RegionName;
 
             if (_cultureData.IsNeutralCulture)

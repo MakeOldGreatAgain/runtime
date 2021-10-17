@@ -1314,10 +1314,8 @@ private:
     OBJECTREF _calendar;
     OBJECTREF _cultureData;
     OBJECTREF _consoleFallbackCulture;
-    STRINGREF _name;                       // "real" name - en-US, de-DE_phoneb or fj-FJ
-    STRINGREF _nonSortName;                // name w/o sort info (de-DE for de-DE_phoneb)
-    STRINGREF _sortName;                   // Sort only name (de-DE_phoneb, en-us for fj-fj (w/us sort)
     CULTUREINFOBASEREF _parent;
+    INT32 _culture;                       // "real" name - en-US, de-DE_phoneb or fj-FJ
     CLR_BOOL _isReadOnly;
     CLR_BOOL _isInherited;
 
@@ -1329,10 +1327,10 @@ public:
     }// GetParent
 
 
-    STRINGREF GetName()
+    LCID GetLCID()
     {
         LIMITED_METHOD_CONTRACT;
-        return _name;
+        return _culture;
     }// GetName
 
 }; // class CultureInfoBaseObject

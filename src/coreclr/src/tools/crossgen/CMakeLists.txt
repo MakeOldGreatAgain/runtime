@@ -72,6 +72,7 @@ else()
         bcrypt
         ntdll
         ${STATIC_MD_CRT_LIB}
+        ${CLR_ENG_NATIVE_DIR}/lib/nlsdl.lib
     )
 
 endif(CLR_CMAKE_HOST_UNIX)
