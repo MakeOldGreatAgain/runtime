@@ -7120,6 +7120,8 @@ bool getILIntrinsicImplementationForUnsafe(MethodDesc * ftn,
         _ASSERTE(ftn->GetNumGenericMethodArgs() == 1);
         mdToken tokGenericArg = FindGenericMethodArgTypeSpec(CoreLibBinder::GetModule()->GetMDImport());
 
+#pragma warning(push)
+#pragma warning(disable:4640)
         static const BYTE ilcode[]
         {
             CEE_LDARG_0,
@@ -7127,6 +7129,7 @@ bool getILIntrinsicImplementationForUnsafe(MethodDesc * ftn,
             CEE_LDOBJ, (BYTE)(tokGenericArg), (BYTE)(tokGenericArg >> 8), (BYTE)(tokGenericArg >> 16), (BYTE)(tokGenericArg >> 24),
             CEE_RET
         };
+#pragma warning(pop)
 
         methInfo->ILCode = const_cast<BYTE*>(ilcode);
         methInfo->ILCodeSize = sizeof(ilcode);
@@ -7143,6 +7146,8 @@ bool getILIntrinsicImplementationForUnsafe(MethodDesc * ftn,
         _ASSERTE(ftn->GetNumGenericMethodArgs() == 1);
         mdToken tokGenericArg = FindGenericMethodArgTypeSpec(CoreLibBinder::GetModule()->GetMDImport());
 
+#pragma warning(push)
+#pragma warning(disable:4640)
         static const BYTE ilcode[]
         {
             CEE_LDARG_0,
@@ -7151,6 +7156,7 @@ bool getILIntrinsicImplementationForUnsafe(MethodDesc * ftn,
             CEE_STOBJ, (BYTE)(tokGenericArg), (BYTE)(tokGenericArg >> 8), (BYTE)(tokGenericArg >> 16), (BYTE)(tokGenericArg >> 24),
             CEE_RET
         };
+#pragma warning(pop)
 
         methInfo->ILCode = const_cast<BYTE*>(ilcode);
         methInfo->ILCodeSize = sizeof(ilcode);

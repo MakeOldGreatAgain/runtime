@@ -441,6 +441,7 @@ if (MSVC)
   add_compile_options(/MP) # Build with Multiple Processes (number of processes equal to the number of processors)
   add_compile_options(/Zm200) # Specify Precompiled Header Memory Allocation Limit of 150MB
   add_compile_options(/Zc:strictStrings) # Disable string-literal to char* or wchar_t* conversion
+  add_compile_options("/Zc:threadSafeInit-")
 
   add_compile_options(/wd4960 /wd4961 /wd4603 /wd4627 /wd4838 /wd4456 /wd4457 /wd4458 /wd4459 /wd4091 /we4640)
 

@@ -5012,7 +5012,10 @@ void ParseUseEntryPointFilter(LPCWSTR value)
 bool GetUseEntryPointFilter()
 {
 #ifdef TARGET_WINDOWS // This feature has only been tested on Windows, keep it disabled on other platforms
+#pragma warning(push)
+#pragma warning(disable:4640)
     static bool s_useEntryPointFilterEnv = CLRConfig::GetConfigValue(CLRConfig::INTERNAL_UseEntryPointFilter) != 0;
+#pragma warning(pop)
 
     return s_useEntryPointFilterCorhostProperty || s_useEntryPointFilterEnv;
 #else

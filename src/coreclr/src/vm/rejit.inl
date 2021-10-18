@@ -25,7 +25,10 @@ inline BOOL ReJitManager::IsReJITEnabled()
 {
     LIMITED_METHOD_CONTRACT;
 
+#pragma warning(push)
+#pragma warning(disable:4640)
     static bool profilerStartupRejit = CORProfilerEnableRejit() != FALSE;
+#pragma warning(pop)
     static ConfigDWORD rejitOnAttachEnabled;
 
     return  profilerStartupRejit || (rejitOnAttachEnabled.val(CLRConfig::EXTERNAL_ProfAPI_RejitOnAttach) != 0);

@@ -115,6 +115,9 @@ internal static partial class Interop
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         internal static extern int GetUserDefaultLCID();
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        internal static extern int GetSystemDefaultLCID();
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetLocaleInfo(int locale, uint LCType, void* lpLCData, int cchData);
 

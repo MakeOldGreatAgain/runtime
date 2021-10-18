@@ -221,9 +221,6 @@ namespace System.Globalization
             switch (culture)
             {
                 case LOCALE_CUSTOM_DEFAULT:
-                case LOCALE_SYSTEM_DEFAULT:
-                case LOCALE_NEUTRAL:
-                case LOCALE_USER_DEFAULT:
                 case LOCALE_CUSTOM_UNSPECIFIED:
                     // Can't support unknown custom cultures and we do not support neutral or
                     // non-custom user locales.
@@ -234,6 +231,7 @@ namespace System.Globalization
                         throw new CultureNotFoundException(nameof(culture), culture, SR.Argument_CultureNotSupported);
                     break;
             }
+            _culture = _cultureData.LCID;
             _isInherited = GetType() != typeof(CultureInfo);
         }
 

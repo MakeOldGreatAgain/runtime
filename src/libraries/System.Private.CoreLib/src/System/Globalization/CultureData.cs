@@ -39,7 +39,6 @@ namespace System.Globalization
     /// </remarks>
     internal partial class CultureData
     {
-        private const int LocaleNameMaxLength = 85;
         private const int undef = -1;
 
         // Override flag
@@ -402,6 +401,16 @@ namespace System.Globalization
 
         internal static CultureData? GetCultureData(string cultureName, bool useUserOverride)
         {
+            if (string.IsNullOrEmpty(cultureName))
+            {
+                return Invariant;
+            }
+
+            if (GlobalizationMode.Invariant)
+            {
+                throw new CultureNotFoundException(nameof(cultureName), cultureName, SR.Argument_CultureNotSupported);
+            }
+
             int culture = NlsLocaleNameToLCID(cultureName);
             if (culture == 0)
             {
@@ -411,62 +420,15 @@ namespace System.Globalization
             return GetCultureData(culture, useUserOverride);
         }
 
-        private static string NormalizeCultureName(string name, out bool isNeutralName)
+        private static int NormalizeLCID(int culture, out bool isNeutralName)
         {
-            isNeutralName = true;
-            int i = 0;
-
-            if (name.Length > LocaleNameMaxLength)
+            isNeutralName = (culture & 0xFF00) == 0;
+            return culture switch
             {
-                // Theoretically we shouldn't hit this exception.
-                throw new ArgumentException(SR.Format(SR.Argument_InvalidId, nameof(name)));
-            }
-
-            Span<char> normalizedName = stackalloc char[name.Length];
-
-            bool changed = false;
-
-            while (i < name.Length && name[i] != '-' && name[i] != '_')
-            {
-                if (name[i] >= 'A' && name[i] <= 'Z')
-                {
-                    // lowercase characters before '-'
-                    normalizedName[i] = (char)(((int)name[i]) + 0x20);
-                    changed = true;
-                }
-                else
-                {
-                    normalizedName[i] = name[i];
-                }
-                i++;
-            }
-
-            if (i < name.Length)
-            {
-                // this is not perfect to detect the non neutral cultures but it is good enough when we are running in invariant mode
-                isNeutralName = false;
-            }
-
-            while (i < name.Length)
-            {
-                if (name[i] >= 'a' && name[i] <= 'z')
-                {
-                    normalizedName[i] = (char)(((int)name[i]) - 0x20);
-                    changed = true;
-                }
-                else
-                {
-                    normalizedName[i] = name[i];
-                }
-                i++;
-            }
-
-            if (changed)
-            {
-                return new string(normalizedName);
-            }
-
-            return name;
+                CultureInfo.LOCALE_USER_DEFAULT => Interop.Kernel32.GetUserDefaultLCID(),
+                CultureInfo.LOCALE_SYSTEM_DEFAULT => Interop.Kernel32.GetSystemDefaultLCID(),
+                _ => culture
+            };
         }
 
         private static CultureData? CreateCultureData(int culture, bool useUserOverride)
@@ -482,7 +444,7 @@ namespace System.Globalization
             }
 
             CultureData cultureData = new CultureData();
-            cultureData._iLcid = culture;
+            cultureData._iLcid = NormalizeLCID(culture, out cultureData._bNeutral);
             cultureData._bUseOverridesUserSetting = useUserOverride;
 
             // Ask native code if that one's real
