@@ -26,7 +26,6 @@ internal static partial class Interop
             public LOGFONT lfMenuFont;
             public LOGFONT lfStatusFont;
             public LOGFONT lfMessageFont;
-            public int iPaddedBorderWidth;
         }
     }
 }

@@ -3,25 +3,34 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 internal static partial class Interop
 {
+    private const int PROV_RSA_FULL = 1;
+
+    private static readonly SafeProvHandle _rngProv = GetRngCryptProvider();
+
     internal static unsafe void GetRandomBytes(byte* buffer, int length)
     {
         Debug.Assert(buffer != null);
         Debug.Assert(length >= 0);
 
-        BCrypt.NTSTATUS status = BCrypt.BCryptGenRandom(IntPtr.Zero, buffer, length, BCrypt.BCRYPT_USE_SYSTEM_PREFERRED_RNG);
-        if (status != BCrypt.NTSTATUS.STATUS_SUCCESS)
+        if (!Advapi32.CryptGenRandom(_rngProv, (uint)length, buffer))
         {
-            if (status == BCrypt.NTSTATUS.STATUS_NO_MEMORY)
-            {
-                throw new OutOfMemoryException();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
+            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+    }
+
+    internal static SafeProvHandle GetRngCryptProvider()
+    {
+        if (!Advapi32.CryptAcquireContext(out var prov, null, null, PROV_RSA_FULL,
+            (uint)(Advapi32.CryptAcquireContextFlags.CRYPT_VERIFYCONTEXT | Advapi32.CryptAcquireContextFlags.CRYPT_SILENT)))
+        {
+            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+
+        return prov;
     }
 }

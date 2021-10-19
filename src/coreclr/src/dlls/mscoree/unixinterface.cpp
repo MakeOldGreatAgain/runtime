@@ -220,7 +220,10 @@ int coreclr_initialize(
 
     if (bundleProbe != nullptr)
     {
+#pragma warning(push)
+#pragma warning(disable:4640)
         static Bundle bundle(StringToUnicode(exePath), bundleProbe);
+#pragma warning(pop)
         Bundle::AppBundle = &bundle;
     }
 

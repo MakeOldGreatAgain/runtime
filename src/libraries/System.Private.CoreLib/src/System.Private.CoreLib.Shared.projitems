@@ -1134,13 +1134,28 @@
     <Compile Include="$(CommonPath)System\Threading\Tasks\TaskToApm.cs">
       <Link>Common\System\Threading\Tasks\TaskToApm.cs</Link>
     </Compile>
+    <Compile Include="$(CommonPath)Microsoft\Win32\SafeHandles\SafeHandleCache.cs">
+      <Link>Common\Microsoft\Win32\SafeHandles\SafeHandleCache.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.ActivityControl.cs">
       <Link>Common\Interop\Windows\Advapi32\Interop.ActivityControl.cs</Link>
     </Compile>
+    <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.CryptAcquireContext.cs">
+      <Link>Common\Interop\Windows\Advapi32\Interop.CryptAcquireContext.cs</Link>
+    </Compile>
     <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.EtwEnableCallback.cs">
       <Link>Common\Interop\Windows\Advapi32\Interop.EtwEnableCallback.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.CryptGenRandom.cs">
+      <Link>Common\Interop\Windows\Advapi32\Interop.CryptGenRandom.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.CryptReleaseContext.cs">
+      <Link>Common\Interop\Windows\Advapi32\Interop.CryptReleaseContext.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonPath)Interop\Windows\Advapi32\SafeProvHandle.cs">
+      <Link>Common\Interop\Windows\Advapi32\SafeProvHandle.cs</Link>
     </Compile>
     <Compile Include="$(CommonPath)Interop\Windows\Advapi32\Interop.EVENT_INFO_CLASS.cs">
       <Link>Common\Interop\Windows\Advapi32\Interop.EVENT_INFO_CLASS.cs</Link>
