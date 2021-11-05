@@ -518,6 +518,8 @@ inline bool dbgOnly_IsSpecialEEThread()
     return false;
 }
 
+#define ClrFlsSetThreadType(type)
+
 //
 // Performance logging
 //

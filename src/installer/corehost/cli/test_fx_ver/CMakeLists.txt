@@ -17,9 +17,9 @@ set(SOURCES
 include(${CMAKE_CURRENT_LIST_DIR}/../hostmisc/hostmisc.cmake)
 
 if(CLR_CMAKE_HOST_WIN32)
-    add_compile_options($<$<CONFIG:RelWithDebInfo>:/MT>)
-    add_compile_options($<$<CONFIG:Release>:/MT>)
-    add_compile_options($<$<CONFIG:Debug>:/MTd>)
+    add_compile_options($<$<CONFIG:RelWithDebInfo>:/MD>)
+    add_compile_options($<$<CONFIG:Release>:/MD>)
+    add_compile_options($<$<CONFIG:Debug>:/MDd>)
 else()
     add_compile_options(-fvisibility=hidden)
 endif()

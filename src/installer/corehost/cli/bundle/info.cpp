@@ -38,7 +38,10 @@ StatusCode info_t::process_bundle(const pal::char_t* bundle_path, const pal::cha
         return StatusCode::Success;
     }
 
+#pragma warning(push)
+#pragma warning(disable:4640)
     static info_t info(bundle_path, app_path, header_offset);
+#pragma warning(pop)
     StatusCode status = info.process_header();
 
     if (status != StatusCode::Success)

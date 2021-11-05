@@ -357,3 +357,7 @@ src/coreclr/src/System.Private.CoreLib/common
 # Mono Wasm-specific excludes
 src/mono/wasm/emsdk/
 src/mono/wasm/.stamp-wasm-install-and-select*
+src/installer/**/*.vcxproj
+src/installer/**/*.sln
+src/installer/**/*.filters
+src/installer/**/config.h

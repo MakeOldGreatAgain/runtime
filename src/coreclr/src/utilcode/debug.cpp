@@ -189,7 +189,29 @@ VOID TerminateOnAssert()
     RaiseFailFastException(NULL, NULL, 0);
 }
 
-thread_local bool f_bDisplayingAssertDlg;
+// Whether this thread is already displaying an assert dialog.
+BOOL IsDisplayingAssertDlg()
+{
+    STATIC_CONTRACT_NOTHROW;
+    STATIC_CONTRACT_GC_NOTRIGGER;
+    STATIC_CONTRACT_DEBUG_ONLY;
+
+    size_t flag = 0;
+    if (ClrFlsCheckValue(TlsIdx_AssertDlgStatus, (LPVOID *)&flag))
+    {
+        return (flag != 0);
+    }
+    return FALSE;
+}
+
+void SetDisplayingAssertDlg(BOOL value)
+{
+    STATIC_CONTRACT_NOTHROW;
+    STATIC_CONTRACT_GC_NOTRIGGER;
+    STATIC_CONTRACT_DEBUG_ONLY;
+
+    ClrFlsSetValue(TlsIdx_AssertDlgStatus, (LPVOID)(size_t)value);
+}
 
 VOID LogAssert(
     LPCSTR      szFile,
@@ -424,7 +446,7 @@ bool _DbgBreakCheck(
         TerminateOnAssert();
     }
 
-    if (f_bDisplayingAssertDlg)
+    if (IsDisplayingAssertDlg())
     {
         // We are already displaying an assert dialog box on this thread. The reason why we came here is
         // the message loop run by the API we call to display the UI. A message was dispatched and execution
@@ -434,7 +456,7 @@ bool _DbgBreakCheck(
         return false;
     }
 
-    f_bDisplayingAssertDlg = true;
+    SetDisplayingAssertDlg(TRUE);
 
     // Tell user there was an error.
     _DbgBreakCount++;
@@ -451,7 +473,7 @@ bool _DbgBreakCheck(
     }
     --_DbgBreakCount;
 
-    f_bDisplayingAssertDlg = false;
+    SetDisplayingAssertDlg(FALSE);
 
     switch(ret)
     {

@@ -99,8 +99,6 @@ void AcquireEventPipeThreadRef(EventPipeThread *pThread)
     pThread->AddRef();
 }
 
-thread_local EventPipeThreadHolder EventPipeThread::gCurrentEventPipeThreadHolder;
-
 SpinLock EventPipeThread::s_threadsLock;
 SList<SListElem<EventPipeThread *>> EventPipeThread::s_pThreads;
 
@@ -146,7 +144,7 @@ void EventPipeThread::Initialize()
 EventPipeThread *EventPipeThread::Get()
 {
     LIMITED_METHOD_CONTRACT;
-    return gCurrentEventPipeThreadHolder;
+    return (EventPipeThread*)ClrFlsGetValue(TlsIdx_CurrentEventPipeThreadHolder);
 }
 
 EventPipeThread* EventPipeThread::GetOrCreate()
@@ -159,15 +157,16 @@ EventPipeThread* EventPipeThread::GetOrCreate()
     }
     CONTRACTL_END;
 
-    if (gCurrentEventPipeThreadHolder == nullptr)
+    if (Get() == nullptr)
     {
         EX_TRY
         {
-            gCurrentEventPipeThreadHolder = new EventPipeThread();
+            EventPipeThread* thread = new EventPipeThread();
+            ClrFlsSetValue(TlsIdx_CurrentEventPipeThreadHolder, thread);
             
             {
                 SpinLockHolder crst(&s_threadsLock);
-                s_pThreads.InsertTail(new SListElem<EventPipeThread *>((EventPipeThread *)gCurrentEventPipeThreadHolder));
+                s_pThreads.InsertTail(new SListElem<EventPipeThread *>(thread));
             }
         }
         EX_CATCH
@@ -175,7 +174,7 @@ EventPipeThread* EventPipeThread::GetOrCreate()
         }
         EX_END_CATCH(SwallowAllExceptions);
     }
-    return gCurrentEventPipeThreadHolder;
+    return Get();
 }
 
 EventPipeThreadIterator EventPipeThread::GetThreads()

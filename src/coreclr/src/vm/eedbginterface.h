@@ -278,9 +278,8 @@ public:
     virtual bool SweepThreadsForDebug(bool forceSync) = 0;
 
    virtual void GetRuntimeOffsets(SIZE_T *pTLSIndex,
-                                  SIZE_T *pTLSEEThreadOffset,
-                                  SIZE_T *pTLSIsSpecialOffset,
-                                  SIZE_T *pTLSCantStopOffset,
+                                  SIZE_T *pTLSIsSpecialIndex,
+                                  SIZE_T *pTLSCantStopIndex,
                                   SIZE_T *pEEThreadStateOffset,
                                   SIZE_T *pEEThreadStateNCOffset,
                                   SIZE_T *pEEThreadPGCDisabledOffset,
@@ -290,6 +289,7 @@ public:
                                   DWORD  *pEEThreadSteppingStateMask,
                                   DWORD  *pEEMaxFrameValue,
                                   SIZE_T *pEEThreadDebuggerFilterContextOffset,
+                                  SIZE_T *pEEThreadCantStopMask,
                                   SIZE_T *pEEFrameNextOffset,
                                   DWORD  *pEEIsManagedExceptionStateMask) = 0;
 

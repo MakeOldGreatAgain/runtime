@@ -190,9 +190,12 @@ namespace
 
 clsid_map comhost::get_clsid_map()
 {
+#pragma warning(push)
+#pragma warning(disable:4640)
     static pal::mutex_t static_map_lock;
     static bool static_map_set = false;
     static clsid_map static_map{};
+#pragma warning(pop)
 
     std::lock_guard<pal::mutex_t> lock{ static_map_lock };
     if (static_map_set)

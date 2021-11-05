@@ -69,6 +69,18 @@ HANDLE ClrGetProcessExecutableHeap();
 extern int RFS_HashStack();
 #endif
 
+
+// Callback function for cleaning up TLS
+typedef VOID(__stdcall* PTLS_CALLBACK_FUNCTION)(PVOID);
+
+void ClrFlsAssociateCallback(DWORD slot, PTLS_CALLBACK_FUNCTION callback);
+
+// Combining getter/setter into a single call
+void ClrFlsIncrementValue(DWORD slot, int increment);
+void* ClrFlsGetValue(DWORD slot);
+BOOL ClrFlsCheckValue(DWORD slot, void** pValue);
+void ClrFlsSetValue(DWORD slot, void* pData);
+
 // Critical section support for CLR DLLs other than the the EE.
 // Include the header defining each Crst type and its corresponding level (relative rank). This is
 // auto-generated from a tool that takes a high-level description of each Crst type and its dependencies.
@@ -94,17 +106,8 @@ typedef Wrapper<CRITSEC_COOKIE, DoNothing<CRITSEC_COOKIE>, VoidClrDeleteCritical
 
 HMODULE GetCLRModule ();
 
-extern thread_local int t_CantAllocCount;
-
-inline void IncCantAllocCount()
-{
-    t_CantAllocCount++;
-}
-
-inline void DecCantAllocCount()
-{
-    t_CantAllocCount--;
-}
+extern void IncCantAllocCount();
+extern void DecCantAllocCount();
 
 class CantAllocHolder
 {
@@ -120,13 +123,18 @@ public:
 };
 
 // At places where want to allocate stress log, we need to first check if we are allowed to do so.
+// If ClrTlsInfo doesn't exist for this thread, we take it as can alloc
 inline bool IsInCantAllocRegion ()
 {
-    return t_CantAllocCount != 0;
+    size_t count = 0;
+    if (ClrFlsCheckValue(TlsIdx_CantAllocCount, (LPVOID *)&count))
+    {
+        _ASSERTE (count >= 0);
+        return count > 0;
+    }
+    return false;
 }
-inline BOOL IsInCantAllocStressLogRegion()
-{
-    return t_CantAllocCount != 0;
-}
+// for stress log the rule is more restrict, we have to check the global counter too
+extern BOOL IsInCantAllocStressLogRegion();
 
 #endif

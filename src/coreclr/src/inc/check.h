@@ -79,8 +79,6 @@ protected:
     // Keep leakage counters.
     static  size_t s_cLeakedBytes;
     static  size_t s_cNumFailures;
-
-    static thread_local LONG t_count;
 #endif
 
     static BOOL s_neverEnforceAsserts;
@@ -145,7 +143,10 @@ public: // !!! NOTE: Called from macros only!!!
 
     static void SetAssertEnforcement(BOOL value);
 
+    static void ReleaseTls(void* pCountTLS);
+
   private:
+    static LONG* InitTls();
 #ifdef _DEBUG
     static LPCSTR AllocateDynamicMessage(const SString &s);
 #endif

@@ -99,10 +99,6 @@ TailCallArgBuffer* TailCallTls::AllocArgBuffer(int size, void* gcDesc)
     return m_argBuffer;
 }
 
-#if defined (_DEBUG_IMPL) || defined(_PREFAST_)
-thread_local int t_ForbidGCLoaderUseCount;
-#endif
-
 uint64_t Thread::dead_threads_non_alloc_bytes = 0;
 
 SPTR_IMPL(ThreadStore, ThreadStore, s_pThreadStore);
@@ -153,7 +149,6 @@ CrstStatic g_DeadlockAwareCrst;
 // such calls may execute arbitrary code unrelated to the actual stack walking, and
 // may never return, in the case of exception stackwalk callbacks.
 //
-thread_local Thread* t_pStackWalkerWalkingThread;
 
 #if defined(_DEBUG)
 BOOL MatchThreadHandleToOsId ( HANDLE h, DWORD osId )
@@ -360,24 +355,18 @@ bool Thread::DetectHandleILStubsForDebugger()
     return false;
 }
 
-#ifndef _MSC_VER
-__thread ThreadLocalInfo gCurrentThreadInfo;
-#endif
-
 #ifndef DACCESS_COMPILE
 
 void SetThread(Thread* t)
 {
     LIMITED_METHOD_CONTRACT
 
-    gCurrentThreadInfo.m_pThread = t;
+    ClrFlsSetValue(TlsIdx_Thread, t);
 }
 
 void SetAppDomain(AppDomain* ad)
 {
     LIMITED_METHOD_CONTRACT
-
-    gCurrentThreadInfo.m_pAppDomain = ad;
 }
 
 BOOL Thread::Alert ()
@@ -1046,7 +1035,7 @@ DWORD GetRuntimeId()
     LIMITED_METHOD_CONTRACT;
 
 #ifdef HOST_WINDOWS
-    return _tls_index;
+    return 0;
 #else
     return 0;
 #endif
@@ -1177,13 +1166,8 @@ void InitThreadManager()
 #ifndef TARGET_UNIX
     _ASSERTE(GetThread() == NULL);
 
-    size_t offsetOfCurrentThreadInfo = Thread::GetOffsetOfThreadStatic(&gCurrentThreadInfo);
-
-    _ASSERTE(offsetOfCurrentThreadInfo < 0x8000);
-    _ASSERTE(_tls_index < 0x10000);
-
     // Save gCurrentThreadInfo location for debugger
-    SetIlsIndex((DWORD)(_tls_index + (offsetOfCurrentThreadInfo << 16) + 0x80000000));
+    // SetIlsIndex(TlsIdx_ThreadInfo);
 
     _ASSERTE(g_TrapReturningThreads == 0);
 #endif // !TARGET_UNIX
@@ -1418,6 +1402,7 @@ Thread::Thread()
     m_ltoIsUnhandled = FALSE;
 
     m_debuggerFilterContext = NULL;
+    m_debuggerCantStop = 0;
     m_fInteropDebuggingHijacked = FALSE;
     m_profilerCallbackState = 0;
 #if defined(PROFILING_SUPPORTED) || defined(PROFILING_SUPPORTED_DATA)
@@ -7189,6 +7174,34 @@ T_CONTEXT *Thread::GetFilterContext(void)
 }
 
 #ifndef DACCESS_COMPILE
+
+// @todo - eventually complete remove the CantStop count on the thread and use
+// the one in the PreDef block. For now, we increment both our thread counter,
+// and the FLS counter. Eventually we can remove our thread counter and only use
+// the FLS counter.
+void Thread::SetDebugCantStop(bool fCantStop)
+{
+    LIMITED_METHOD_CONTRACT;
+
+    if (fCantStop)
+    {
+        IncCantStopCount();
+        m_debuggerCantStop++;
+    }
+    else
+    {
+        DecCantStopCount();
+        m_debuggerCantStop--;
+    }
+}
+
+// @todo - remove this, we only read this from oop.
+bool Thread::GetDebugCantStop(void)
+{
+    LIMITED_METHOD_CONTRACT;
+
+    return m_debuggerCantStop != 0;
+}
 
 void Thread::InitContext()
 {

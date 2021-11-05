@@ -68,8 +68,7 @@ if(CLR_CMAKE_TARGET_WIN32)
     set(CORECLR_LIBRARIES
         # Disable superhost on Win32 for now.
         # ${CORECLR_STATIC_LIB_LOCATION}/coreclr_static.lib
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
+        ${STATIC_MD_CRT_LIB}
         kernel32.lib
         advapi32.lib
         ole32.lib

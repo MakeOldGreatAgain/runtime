@@ -11,6 +11,7 @@ if (CLR_CMAKE_HOST_WIN32)
     list(APPEND CLR_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/coreclr.def)
 
     add_linker_flag("/ENTRY:CoreDllMain")
+    add_linker_flag("/FORCE:MULTIPLE")
 
     # Incremental linking results in the linker inserting extra padding and routing function calls via thunks that can break the
     # invariants (e.g. size of region between Jit_PatchedCodeLast-Jit_PatchCodeStart needs to fit in a page).

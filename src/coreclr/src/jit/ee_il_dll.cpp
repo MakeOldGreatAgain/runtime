@@ -184,16 +184,14 @@ DLLEXPORT ICorJitCompiler* __stdcall getJit()
 // If you are using it more broadly in retail code, you would need to understand the
 // performance implications of accessing TLS.
 
-thread_local void* gJitTls = nullptr;
-
 static void* GetJitTls()
 {
-    return gJitTls;
+    return ClrFlsGetValue(TlsIdx_Jit);
 }
 
 void SetJitTls(void* value)
 {
-    gJitTls = value;
+    ClrFlsSetValue(TlsIdx_Jit, value);
 }
 
 #if defined(DEBUG)

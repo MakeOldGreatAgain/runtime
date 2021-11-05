@@ -9,7 +9,6 @@
 #include <clrnt.h>
 #include <atomic>
 #include <clrdata.h>
-#include <corhlprpriv.h>
 #include <nlsdl.h>
 
 // see also: crt/src/concrt/ResourceManager.cpp:FlushStoreBuffers()
@@ -28,8 +27,8 @@ void WINAPI FlushProcessWriteBuffers()
 
     // Note that the read of *m_pPageVirtualProtect is very important, as it makes it extremely likely that this memory will
     // be in the working set when we call VirtualProtect (see comments below).
-    InterlockedCompareExchange((volatile ULONG*)m_pPageVirtualProtect, 0, 0);
-
+    if (*m_pPageVirtualProtect == 0)
+        *m_pPageVirtualProtect = 1;
     //
     // VirtualProtect simulates FlushProcessWriteBuffers because it happens to send an inter-processor interrupt to all CPUs,
     // and inter-processor interrupts happen to cause the CPU's store buffers to be flushed.
@@ -529,8 +528,9 @@ IsNLSDefinedString(
     // Note: "lpVersionInfo" is unused, we always presume the current version
     // Ported downlevel code from comnlsinfo.cpp
 
-    CQuickBytes buffer;
-    if (!buffer.AllocNoThrow(16))
+    wchar_t *buffer;
+    size_t bufferLen = 16;
+    if (!(buffer = new (std::nothrow) wchar_t[bufferLen]))
     {
         SetLastError(E_OUTOFMEMORY);
         return FALSE;
@@ -543,12 +543,14 @@ IsNLSDefinedString(
         WCHAR wch = lpString[ich];
 
         int dwBufSize = LCMapStringW(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT),
-            LCMAP_SORTKEY | SORT_STRINGSORT, lpString + ich, 1, (LPWSTR)buffer.Ptr(),
-            (int)(buffer.Size() / sizeof(WCHAR)));
+            LCMAP_SORTKEY | SORT_STRINGSORT, lpString + ich, 1, buffer,
+            (int)(bufferLen));
 
         if (dwBufSize == 0)
         {
-            if (!buffer.AllocNoThrow(buffer.Size() * 2))
+            bufferLen *= 2;
+            delete[] buffer;
+            if (!(buffer = new (std::nothrow) wchar_t[bufferLen]))
             {
                 SetLastError(E_OUTOFMEMORY);
                 return FALSE;
@@ -556,7 +558,7 @@ IsNLSDefinedString(
             continue; // try again
         }
 
-        if (LPBYTE(buffer.Ptr())[0] == 0x1)  // no weight
+        if (LPBYTE(bufferLen)[0] == 0x1)  // no weight
         {
             //
             // Check for the NULL case and formatting characters case. Not

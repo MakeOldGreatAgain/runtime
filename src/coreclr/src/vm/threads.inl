@@ -22,19 +22,14 @@
 
 #ifndef DACCESS_COMPILE
 
-#ifdef HOST_WINDOWS
-EXTERN_C UINT32 _tls_index;
-#endif
-
 #ifdef _MSC_VER
-__declspec(selectany) __declspec(thread) ThreadLocalInfo gCurrentThreadInfo;
 #else
 EXTERN_C __thread ThreadLocalInfo gCurrentThreadInfo;
 #endif
 
 EXTERN_C inline Thread* STDCALL GetThread()
 {
-    return gCurrentThreadInfo.m_pThread;
+    return (Thread*)ClrFlsGetValue(TlsIdx_Thread);
 }
 
 EXTERN_C inline AppDomain* STDCALL GetAppDomain()
@@ -212,19 +207,6 @@ inline void Thread::ExitForbidSuspendForDebuggerRegion()
     _ASSERTE(m_isInForbidSuspendForDebuggerRegion);
     m_isInForbidSuspendForDebuggerRegion = false;
 }
-
-#ifdef HOST_WINDOWS
-inline size_t Thread::GetOffsetOfThreadStatic(void* pThreadStatic)
-{
-    LIMITED_METHOD_CONTRACT;
-
-    PTEB Teb = NtCurrentTeb();
-    BYTE** tlsArray = (BYTE**)Teb->ThreadLocalStoragePointer;
-    BYTE* tlsData = (BYTE*)tlsArray[_tls_index];
-
-    return (BYTE*)pThreadStatic - tlsData;
-}
-#endif
 
 #endif // !DACCESS_COMPILE && !CROSSGEN_COMPILE
 

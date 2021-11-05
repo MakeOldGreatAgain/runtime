@@ -9,13 +9,51 @@
 #include "debugmacros.h"
 #include "clrtypes.h"
 
+inline LONG *CHECK::InitTls()
+{
+#pragma push_macro("HeapAlloc")
+#pragma push_macro("GetProcessHeap")
+#undef HeapAlloc
+#undef GetProcessHeap
+
+    LONG *pCount = (LONG *)::HeapAlloc(GetProcessHeap(), 0, sizeof(LONG));
+    if (pCount)
+        *pCount = 0;
+
+#pragma pop_macro("HeapAlloc")
+#pragma pop_macro("GetProcessHeap")
+    ClrFlsSetValue(TlsIdx_Check, pCount);
+    ClrFlsAssociateCallback(TlsIdx_Check, ReleaseCheckTls);
+    return pCount;
+}
+
+inline void CHECK::ReleaseTls(void* pCountTLS)
+{
+#pragma push_macro("HeapFree")
+#pragma push_macro("GetProcessHeap")
+#undef HeapFree
+#undef GetProcessHeap
+        LONG* pCount = (LONG*) pCountTLS;
+        if (pCount)
+            ::HeapFree(GetProcessHeap(), 0, pCount);
+
+#pragma pop_macro("HeapFree")
+#pragma pop_macro("GetProcessHeap")
+}
+
 FORCEINLINE BOOL CHECK::EnterAssert()
 {
     if (s_neverEnforceAsserts)
         return FALSE;
 
 #ifdef _DEBUG_IMPL
-    m_pCount = &t_count;
+    m_pCount = (LONG *)ClrFlsGetValue(TlsIdx_Check);
+    if (!m_pCount)
+    {
+        m_pCount = InitTls();
+        if (!m_pCount)
+            return FALSE;
+    }
 
     if (!*m_pCount)
     {
@@ -42,9 +80,12 @@ FORCEINLINE BOOL CHECK::IsInAssert()
 {
 #ifdef _DEBUG_IMPL
     if (!m_pCount)
-        m_pCount = &t_count;
+        m_pCount = (LONG *)ClrFlsGetValue(TlsIdx_Check);
 
-    return *m_pCount;
+    if (!m_pCount)
+        return FALSE;
+    else
+        return *m_pCount;
 #else
     return FALSE;
 #endif

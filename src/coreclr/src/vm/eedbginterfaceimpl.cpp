@@ -1313,9 +1313,8 @@ void EEDbgInterfaceImpl::DisableTraceCall(Thread *thread)
 }
 
 void EEDbgInterfaceImpl::GetRuntimeOffsets(SIZE_T *pTLSIndex,
-                                           SIZE_T *pTLSEEThreadOffset,
-                                           SIZE_T *pTLSIsSpecialOffset,
-                                           SIZE_T *pTLSCantStopOffset,
+                                           SIZE_T *pTLSIsSpecialIndex,
+                                           SIZE_T *pTLSCantStopIndex,
                                            SIZE_T *pEEThreadStateOffset,
                                            SIZE_T *pEEThreadStateNCOffset,
                                            SIZE_T *pEEThreadPGCDisabledOffset,
@@ -1325,16 +1324,17 @@ void EEDbgInterfaceImpl::GetRuntimeOffsets(SIZE_T *pTLSIndex,
                                            DWORD  *pEEThreadSteppingStateMask,
                                            DWORD  *pEEMaxFrameValue,
                                            SIZE_T *pEEThreadDebuggerFilterContextOffset,
+                                           SIZE_T *pEEThreadCantStopOffset,
                                            SIZE_T *pEEFrameNextOffset,
                                            DWORD  *pEEIsManagedExceptionStateMask)
 {
     LIMITED_METHOD_CONTRACT;
 
 #ifdef TARGET_WINDOWS
-    *pTLSIndex = _tls_index;
-    *pTLSEEThreadOffset = Thread::GetOffsetOfThreadStatic(&gCurrentThreadInfo.m_pThread);
-    *pTLSIsSpecialOffset = Thread::GetOffsetOfThreadStatic(&t_ThreadType);
-    *pTLSCantStopOffset = Thread::GetOffsetOfThreadStatic(&t_CantStopCount);
+    *pTLSIndex = g_TlsIndex;
+    *pTLSIsSpecialIndex = TlsIdx_ThreadType;
+    *pTLSCantStopIndex = TlsIdx_CantStopCount;
+    *pEEThreadCantStopOffset = Thread::GetOffsetOfCantStop();
 #else
     *pTLSIndex = (SIZE_T)-1;
     *pTLSEEThreadOffset = (SIZE_T)-1;

@@ -651,18 +651,16 @@ FORCEINLINE void VoidFreeNativeLibrary(NATIVE_LIBRARY_HANDLE h)
 
 typedef Wrapper<NATIVE_LIBRARY_HANDLE, DoNothing<NATIVE_LIBRARY_HANDLE>, VoidFreeNativeLibrary, NULL> NativeLibraryHandleHolder;
 
-extern thread_local size_t t_CantStopCount;
-
 // For debugging, we can track arbitrary Can't-Stop regions.
 // In V1.0, this was on the Thread object, but we need to track this for threads w/o a Thread object.
 FORCEINLINE void IncCantStopCount()
 {
-    t_CantStopCount++;
+    ClrFlsIncrementValue(TlsIdx_CantStopCount, 1);
 }
 
 FORCEINLINE void DecCantStopCount()
 {
-    t_CantStopCount--;
+    ClrFlsIncrementValue(TlsIdx_CantStopCount, -1);
 }
 
 typedef StateHolder<IncCantStopCount, DecCantStopCount> CantStopHolder;
@@ -672,7 +670,7 @@ typedef StateHolder<IncCantStopCount, DecCantStopCount> CantStopHolder;
 // We should never use this w/ control flow.
 inline size_t GetCantStopCount()
 {
-    return t_CantStopCount;
+    return (size_t)ClrFlsGetValue(TlsIdx_CantStopCount);
 }
 
 // At places where we know we're calling out to native code, we can assert that we're NOT in a CS region.

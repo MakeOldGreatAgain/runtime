@@ -894,14 +894,14 @@ StackWalkAction Thread::StackWalkFramesEx(
     {
         // SCOPE: Remember that we're walking the stack.
         //
-        // Normally, we'd use a StackWalkerWalkingThreadHolder to temporarily set this
+        // Normally, we'd use a holder (ClrFlsThreadTypeSwitch) to temporarily set this
         // flag in the thread state, but we can't in this function, since C++ destructors
         // are forbidden when this is called for exception handling (which causes
         // MakeStackwalkerCallback() not to return). Note that in exception handling
         // cases, we will have already cleared the stack walker thread state indicator inside
         // MakeStackwalkerCallback(), so we will be properly cleaned up.
 #if !defined(DACCESS_COMPILE)
-        Thread* pStackWalkThreadOrig = t_pStackWalkerWalkingThread;
+        PVOID pStackWalkThreadOrig = ClrFlsGetValue(TlsIdx_StackWalkerWalkingThread);
 #endif
         SET_THREAD_TYPE_STACKWALKER(this);
 

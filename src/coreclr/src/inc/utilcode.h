@@ -4333,8 +4333,6 @@ public:
 
 #if !defined(DACCESS_COMPILE)
 
-extern thread_local size_t t_ThreadType;
-
 // check if current thread is a GC thread (concurrent or server)
 inline BOOL IsGCSpecialThread ()
 {
@@ -4342,8 +4340,8 @@ inline BOOL IsGCSpecialThread ()
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
     STATIC_CONTRACT_CANNOT_TAKE_LOCK;
-
-    return !!(t_ThreadType & ThreadType_GC);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_GC);
 }
 
 // check if current thread is a Gate thread
@@ -4352,8 +4350,8 @@ inline BOOL IsGateSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Gate);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Gate);
 }
 
 // check if current thread is a Timer thread
@@ -4362,8 +4360,8 @@ inline BOOL IsTimerSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Timer);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Timer);
 }
 
 // check if current thread is a debugger helper thread
@@ -4372,8 +4370,8 @@ inline BOOL IsDbgHelperSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_DbgHelper);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_DbgHelper);
 }
 
 // check if current thread is a debugger helper thread
@@ -4382,8 +4380,8 @@ inline BOOL IsETWRundownSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_ETWRundownThread);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_ETWRundownThread);
 }
 
 // check if current thread is a generic instantiation lookup compare thread
@@ -4392,8 +4390,8 @@ inline BOOL IsGenericInstantiationLookupCompareThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_GenericInstantiationCompare);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_GenericInstantiationCompare);
 }
 
 // check if current thread is a thread which is performing shutdown
@@ -4402,8 +4400,8 @@ inline BOOL IsShutdownSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Shutdown);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Shutdown);
 }
 
 inline BOOL IsThreadPoolIOCompletionSpecialThread ()
@@ -4411,8 +4409,8 @@ inline BOOL IsThreadPoolIOCompletionSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Threadpool_IOCompletion);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Threadpool_IOCompletion);
 }
 
 inline BOOL IsThreadPoolWorkerSpecialThread ()
@@ -4420,8 +4418,8 @@ inline BOOL IsThreadPoolWorkerSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Threadpool_Worker);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Threadpool_Worker);
 }
 
 inline BOOL IsWaitSpecialThread ()
@@ -4429,8 +4427,8 @@ inline BOOL IsWaitSpecialThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Wait);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Wait);
 }
 
 // check if current thread is a thread which is performing shutdown
@@ -4439,8 +4437,8 @@ inline BOOL IsSuspendEEThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_DynamicSuspendEE);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_DynamicSuspendEE);
 }
 
 inline BOOL IsFinalizerThread ()
@@ -4448,8 +4446,8 @@ inline BOOL IsFinalizerThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_Finalizer);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_Finalizer);
 }
 
 inline BOOL IsShutdownHelperThread ()
@@ -4457,8 +4455,8 @@ inline BOOL IsShutdownHelperThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_ShutdownHelper);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_ShutdownHelper);
 }
 
 inline BOOL IsProfilerAttachThread ()
@@ -4466,17 +4464,56 @@ inline BOOL IsProfilerAttachThread ()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_MODE_ANY;
-
-    return !!(t_ThreadType & ThreadType_ProfAPI_Attach);
+    
+    return !!(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ThreadType_ProfAPI_Attach);
 }
 
 // set special type for current thread
-void ClrFlsSetThreadType(TlsThreadTypeFlag flag);
-void ClrFlsClearThreadType(TlsThreadTypeFlag flag);
+inline void ClrFlsSetThreadType (TlsThreadTypeFlag flag)
+{
+    STATIC_CONTRACT_NOTHROW;
+    STATIC_CONTRACT_GC_NOTRIGGER;
+    STATIC_CONTRACT_MODE_ANY;
+
+    ClrFlsSetValue (TlsIdx_ThreadType, (LPVOID)(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) |flag));
+}
+
+// clear specical type for current thread
+inline void ClrFlsClearThreadType (TlsThreadTypeFlag flag)
+{
+    STATIC_CONTRACT_NOTHROW;
+    STATIC_CONTRACT_GC_NOTRIGGER;
+    STATIC_CONTRACT_MODE_ANY;
+
+    ClrFlsSetValue (TlsIdx_ThreadType, (LPVOID)(((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & ~flag));
+}
+
 
 #endif //!DACCESS_COMPILE
 
+#ifdef DACCESS_COMPILE
+#define SET_THREAD_TYPE_STACKWALKER(pThread)
+#define CLEAR_THREAD_TYPE_STACKWALKER()
+#else   // DACCESS_COMPILE
+#define SET_THREAD_TYPE_STACKWALKER(pThread)   ClrFlsSetValue(TlsIdx_StackWalkerWalkingThread, pThread)
+#define CLEAR_THREAD_TYPE_STACKWALKER() ClrFlsSetValue(TlsIdx_StackWalkerWalkingThread, NULL)
+#endif  // DACCESS_COMPILE
+
 HRESULT SetThreadName(HANDLE hThread, PCWSTR lpThreadDescription);
+
+inline BOOL IsStackWalkerThread()
+{
+    STATIC_CONTRACT_NOTHROW;
+    STATIC_CONTRACT_GC_NOTRIGGER;
+    STATIC_CONTRACT_MODE_ANY;
+    STATIC_CONTRACT_CANNOT_TAKE_LOCK;
+
+#if defined(DACCESS_COMPILE)
+    return FALSE;
+#else
+    return ClrFlsGetValue (TlsIdx_StackWalkerWalkingThread) != NULL;
+#endif
+}
 
 inline BOOL IsGCThread ()
 {
@@ -4503,11 +4540,11 @@ public:
 
 #ifndef DACCESS_COMPILE
         m_flag = flag;
-        m_fPreviouslySet = (t_ThreadType & flag);
+        m_fPreviouslySet = (((size_t)ClrFlsGetValue (TlsIdx_ThreadType)) & flag);
 
         // In debug builds, remember the full group of flags that were set at the time
         // the constructor was called.  This will be used in ASSERTs in the destructor
-        INDEBUG(m_nPreviousFlagGroup = t_ThreadType);
+        INDEBUG(m_nPreviousFlagGroup = (size_t)ClrFlsGetValue (TlsIdx_ThreadType));
 
         if (!m_fPreviouslySet)
         {
@@ -4532,7 +4569,7 @@ public:
         // The expression below says that the only difference between the previous flag
         // group and the current flag group should be m_flag (or no difference at all, if
         // m_flag's state didn't actually change).
-        _ASSERTE(((m_nPreviousFlagGroup ^ t_ThreadType) | (size_t) m_flag) == (size_t) m_flag);
+        _ASSERTE(((m_nPreviousFlagGroup ^ (size_t) ClrFlsGetValue(TlsIdx_ThreadType)) | (size_t) m_flag) == (size_t) m_flag);
 
         if (m_fPreviouslySet)
         {
@@ -4549,6 +4586,38 @@ private:
     TlsThreadTypeFlag m_flag;
     BOOL m_fPreviouslySet;
     INDEBUG(size_t m_nPreviousFlagGroup);
+};
+
+class ClrFlsValueSwitch
+{
+public:
+    ClrFlsValueSwitch (PredefinedTlsSlots slot, PVOID value)
+    {
+        STATIC_CONTRACT_NOTHROW;
+        STATIC_CONTRACT_GC_NOTRIGGER;
+        STATIC_CONTRACT_MODE_ANY;
+
+#ifndef DACCESS_COMPILE
+        m_slot = slot;
+        m_PreviousValue = ClrFlsGetValue(slot);
+        ClrFlsSetValue(slot, value);
+#endif // DACCESS_COMPILE
+    }
+
+    ~ClrFlsValueSwitch ()
+    {
+        STATIC_CONTRACT_NOTHROW;
+        STATIC_CONTRACT_GC_NOTRIGGER;
+        STATIC_CONTRACT_MODE_ANY;
+
+#ifndef DACCESS_COMPILE
+        ClrFlsSetValue(m_slot, m_PreviousValue);
+#endif // DACCESS_COMPILE
+    }
+
+private:
+    PVOID m_PreviousValue;
+    PredefinedTlsSlots m_slot;
 };
 
 //*********************************************************************************
@@ -4904,6 +4973,13 @@ HMODULE LoadLocalizedResourceDLLForSDK(_In_z_ LPCWSTR wzResourceDllName, _In_opt
 // This is a slight variation that can be used for anything else
 typedef void* (__cdecl *LocalizedFileHandler)(LPCWSTR);
 void* FindLocalizedFile(_In_z_ LPCWSTR wzResourceDllName, LocalizedFileHandler lfh, _In_opt_z_ LPCWSTR modulePath=NULL);
+
+
+
+// Helper to support termination due to heap corruption
+// It's not supported on Win2K, so we have to manually delay load it
+void EnableTerminationOnHeapCorruption();
+
 
 
 namespace Clr { namespace Util

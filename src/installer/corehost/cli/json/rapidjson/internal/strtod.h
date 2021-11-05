@@ -155,6 +155,8 @@ inline bool StrtodDiyFp(const char* decimals, int dLen, int dExp, double* result
     int actualExp;
     DiyFp cachedPower = GetCachedPower10(dExp, &actualExp);
     if (actualExp != dExp) {
+#pragma warning(push)
+#pragma warning(disable:4640)
         static const DiyFp kPow10[] = {
             DiyFp(RAPIDJSON_UINT64_C2(0xa0000000, 0x00000000), -60),  // 10^1
             DiyFp(RAPIDJSON_UINT64_C2(0xc8000000, 0x00000000), -57),  // 10^2
@@ -164,6 +166,7 @@ inline bool StrtodDiyFp(const char* decimals, int dLen, int dExp, double* result
             DiyFp(RAPIDJSON_UINT64_C2(0xf4240000, 0x00000000), -44),  // 10^6
             DiyFp(RAPIDJSON_UINT64_C2(0x98968000, 0x00000000), -40)   // 10^7
         };
+#pragma warning(pop)
         int adjustment = dExp - actualExp;
         RAPIDJSON_ASSERT(adjustment >= 1 && adjustment < 8);
         v = v * kPow10[adjustment - 1];

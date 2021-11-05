@@ -5,19 +5,12 @@
 ; Define macros to build unwind data for prologues.
 ;
 
-__tls_array     equ 2Ch     ;; offsetof(TEB, ThreadLocalStoragePointer)
-
-gCurrentThreadInfo  TEXTEQU <?gCurrentThreadInfo@@3UThreadLocalInfo@@A>
+GetThread              TEXTEQU <_GetThread@0>
+EXTERN  GetThread:PROC
 
 INLINE_GETTHREAD macro destReg, trashReg
-    ASSUME fs : NOTHING
-
-    EXTERN __tls_index:DWORD
-    EXTERN gCurrentThreadInfo:DWORD
-
-    mov         destReg, [__tls_index]
-    mov         trashReg, fs:[__tls_array]
-    mov         trashReg, [trashReg + destReg * 4]
-    add         trashReg, SECTIONREL gCurrentThreadInfo
-    mov         destReg, [trashReg]
+    push        ecx
+    call        GetThread
+    mov         destReg, eax
+    pop         ecx
 endm

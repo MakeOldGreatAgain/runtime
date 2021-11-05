@@ -130,7 +130,10 @@ bool hostpolicy_init_t::init(host_interface_t* input, hostpolicy_init_t* init)
     {
         if (input->single_file_bundle_header_offset != 0)
         {
+#pragma warning(push)
+#pragma warning(disable:4640)
             static bundle::runner_t bundle_runner(input->host_info_host_path, input->host_info_app_path, input->single_file_bundle_header_offset);
+#pragma warning(pop)
             bundle::info_t::the_app = &bundle_runner;
         }
     }

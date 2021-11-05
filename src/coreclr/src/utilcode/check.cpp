@@ -14,8 +14,6 @@
 #ifdef _DEBUG
 size_t CHECK::s_cLeakedBytes = 0;
 size_t CHECK::s_cNumFailures = 0;
-
-thread_local LONG CHECK::t_count;
 #endif
 
 BOOL CHECK::s_neverEnforceAsserts = 0;
@@ -276,6 +274,11 @@ LPCSTR CHECK::AllocateDynamicMessage(const SString &s)
     // Note use an ASSERTE (not a check) to avoid a recursive deadlock.
     _ASSERTE(s_cLeakedBytes < 10000 || !"Warning - check misuse - leaked over 10,000B due to unexpected usage pattern");
     return p;
+}
+
+void WINAPI ReleaseCheckTls(LPVOID pTlsData)
+{
+    CHECK::ReleaseTls(pTlsData);
 }
 
 #endif

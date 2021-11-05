@@ -40,6 +40,22 @@ BOOL STDMETHODCALLTYPE EEDllMain( // TRUE on success, FALSE on error.
 extern "C" BOOL WINAPI _CRT_INIT(HANDLE hInstance, DWORD dwReason, LPVOID lpReserved);
 extern "C" BOOL WINAPI DllMain(HANDLE hInstance, DWORD dwReason, LPVOID lpReserved);
 
+void WINAPI __dyn_tls_init(PVOID, DWORD dwReason, LPVOID) noexcept // terminate on any C++ exception that leaves a
+                                                                   // namespace-scope thread-local initializer
+                                                                   // N4830 [basic.start.dynamic]/7
+{
+}
+
+/*
+ * Define an initialized callback function pointer, so CRT startup code knows
+ * we have dynamically initialized __declspec(thread) variables that need to
+ * be initialized at process startup for the primary thread.
+ */
+
+extern "C" {
+    extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback = __dyn_tls_init;
+}
+
 // For the CoreClr, this is the real DLL entrypoint. We make ourselves the first entrypoint as
 // we need to capture coreclr's hInstance before the C runtime initializes. This function
 // will capture hInstance, let the C runtime initialize and then invoke the "classic"
@@ -73,7 +89,7 @@ extern "C" BOOL WINAPI CoreDllMain(HANDLE hInstance, DWORD dwReason, LPVOID lpRe
             break;
 
         case DLL_THREAD_ATTACH:
-            _CRT_INIT(hInstance, dwReason, lpReserved);
+            //_CRT_INIT(hInstance, dwReason, lpReserved);
             result = DllMain(hInstance, dwReason, lpReserved);
             break;
 

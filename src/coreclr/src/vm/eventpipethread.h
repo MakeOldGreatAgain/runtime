@@ -84,8 +84,6 @@ public:
 
 class EventPipeThread
 {
-    static thread_local EventPipeThreadHolder gCurrentEventPipeThreadHolder;
-
     static SpinLock s_threadsLock;
     static SList<SListElem<EventPipeThread *>> s_pThreads;
 

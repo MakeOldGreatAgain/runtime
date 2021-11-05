@@ -176,7 +176,10 @@ public:
     {
         if (m_host_mode == host_mode_t::libhost)
         {
+#pragma warning(push)
+#pragma warning(disable:4640)
             static const pal::string_t s_empty;
+#pragma warning(pop)
             *app_dir = s_empty;
             return;
         }

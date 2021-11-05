@@ -40,7 +40,16 @@ enum ShutdownCompleteAction
 void ForceEEShutdown(ShutdownCompleteAction sca = SCA_ExitProcessWhenShutdownComplete);
 
 // Notification of a DLL_THREAD_DETACH or a Thread Terminate.
-void ThreadDetaching();
+void ThreadDetaching(void **pTlsData);
+
+void DeleteTLS(void** pTlsData);
+
+void **CheckThreadState(DWORD slot, BOOL force = TRUE);
+void **CheckThreadStateNoCreate(DWORD slot
+#ifdef _DEBUG
+                                           , BOOL fForDestruction = FALSE
+#endif // _DEBUG
+                                           );
 
 void SetLatchedExitCode (INT32 code);
 INT32 GetLatchedExitCode (void);

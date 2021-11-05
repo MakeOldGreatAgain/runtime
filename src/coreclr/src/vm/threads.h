@@ -2197,6 +2197,15 @@ public:
     }
 
     //---------------------------------------------------------------
+    // Expose offset of the debugger cant stop count for the debugger
+    //---------------------------------------------------------------
+    static SIZE_T GetOffsetOfCantStop()
+    {
+        LIMITED_METHOD_CONTRACT;
+        return (SIZE_T)(offsetof(class Thread, m_debuggerCantStop));
+    }
+
+    //---------------------------------------------------------------
     // Expose offset of m_StateNC
     //---------------------------------------------------------------
     static SIZE_T GetOffsetOfStateNC()
@@ -3712,6 +3721,11 @@ private:
     // return addresses on the stack)
     //---------------------------------------------------------------
     Volatile<LONG> m_hijackLock;
+    //---------------------------------------------------------------
+    // m_debuggerCantStop holds a count of entries into "can't stop"
+    // areas that the Interop Debugging Services must know about.
+    //---------------------------------------------------------------
+    DWORD m_debuggerCantStop;
 
     //---------------------------------------------------------------
     // The current custom notification data object (or NULL if none
@@ -3974,6 +3988,9 @@ public:
 
         ResetThreadState(TS_GCSuspendPending);
     }
+
+    void SetDebugCantStop(bool fCantStop);
+    bool GetDebugCantStop(void);
 
     static LPVOID GetStaticFieldAddress(FieldDesc *pFD);
     TADDR GetStaticFieldAddrNoCreate(FieldDesc *pFD);
@@ -4622,7 +4639,7 @@ public:
 #endif // FEATURE_COMINTEROP
 
 private:
-    // This duplicates the ThreadType_GC bit stored in TLS (t_ThreadType). It exists
+    // This duplicates the ThreadType_GC bit stored in TLS (TlsIdx_ThreadType). It exists
     // so that any thread can query whether any other thread is a "GC Special" thread.
     // (In contrast, ::IsGCSpecialThread() only gives this info about the currently
     // executing thread.) The Profiling API uses this to determine whether it should
@@ -6186,8 +6203,6 @@ if (g_pConfig->GetGCStressLevel() && g_pConfig->FastGCStressLevel() > 1) {   \
 
 #ifdef _DEBUG_IMPL
 
-extern thread_local int t_ForbidGCLoaderUseCount;
-
 // Holder for incrementing the ForbidGCLoaderUse counter.
 class GCForbidLoaderUseHolder
 {
@@ -6195,13 +6210,13 @@ class GCForbidLoaderUseHolder
     GCForbidLoaderUseHolder()
     {
         WRAPPER_NO_CONTRACT;
-        t_ForbidGCLoaderUseCount++;
+        ClrFlsIncrementValue(TlsIdx_ForbidGCLoaderUseCount, 1);
     }
 
     ~GCForbidLoaderUseHolder()
     {
         WRAPPER_NO_CONTRACT;
-        t_ForbidGCLoaderUseCount--;
+        ClrFlsIncrementValue(TlsIdx_ForbidGCLoaderUseCount, -1);
     }
 };
 
@@ -6267,7 +6282,7 @@ class GCForbidLoaderUseHolder
 
 #else // DACCESS_COMPILE
 #ifdef _DEBUG_IMPL
-#define FORBIDGC_LOADER_USE_ENABLED() (t_ForbidGCLoaderUseCount)
+#define FORBIDGC_LOADER_USE_ENABLED() (ClrFlsGetValue(TlsIdx_ForbidGCLoaderUseCount))
 #else   // _DEBUG_IMPL
 
 // If you got an error about FORBIDGC_LOADER_USE_ENABLED being undefined, it's because you tried
@@ -6493,51 +6508,5 @@ PCODE AdjustWriteBarrierIP(PCODE controlPc);
 #define GetWriteBarrierCodeLocation(barrier) ((BYTE*)(barrier))
 
 #endif // FEATURE_WRITEBARRIER_COPY
-
-#if !defined(DACCESS_COMPILE) && !defined(CROSSGEN_COMPILE)
-extern thread_local Thread* t_pStackWalkerWalkingThread;
-#define SET_THREAD_TYPE_STACKWALKER(pThread)    t_pStackWalkerWalkingThread = pThread
-#define CLEAR_THREAD_TYPE_STACKWALKER()         t_pStackWalkerWalkingThread = NULL
-#else
-#define SET_THREAD_TYPE_STACKWALKER(pThread)
-#define CLEAR_THREAD_TYPE_STACKWALKER()
-#endif
-
-inline BOOL IsStackWalkerThread()
-{
-    LIMITED_METHOD_CONTRACT;
-
-#if !defined(DACCESS_COMPILE) && !defined(CROSSGEN_COMPILE)
-    return t_pStackWalkerWalkingThread != NULL;
-#else
-    return FALSE;
-#endif
-}
-
-class StackWalkerWalkingThreadHolder
-{
-public:
-    StackWalkerWalkingThreadHolder(Thread* value)
-    {
-        LIMITED_METHOD_CONTRACT;
-
-#if !defined(DACCESS_COMPILE) && !defined(CROSSGEN_COMPILE)
-        m_PreviousValue = t_pStackWalkerWalkingThread;
-        t_pStackWalkerWalkingThread = value;
-#endif
-    }
-
-    ~StackWalkerWalkingThreadHolder()
-    {
-        LIMITED_METHOD_CONTRACT;
-
-#if !defined(DACCESS_COMPILE) && !defined(CROSSGEN_COMPILE)
-        t_pStackWalkerWalkingThread = m_PreviousValue;
-#endif
-    }
-
-private:
-    Thread* m_PreviousValue;
-};
 
 #endif //__threads_h__

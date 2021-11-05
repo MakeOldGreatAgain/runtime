@@ -1802,10 +1802,12 @@ BOOL STDMETHODCALLTYPE EEDllMain( // TRUE on success, FALSE on error.
         HINSTANCE hInst;
         DWORD dwReason;
         LPVOID lpReserved;
+        void **pTlsData;
     } param;
     param.hInst = hInst;
     param.dwReason = dwReason;
     param.lpReserved = lpReserved;
+    param.pTlsData = NULL;
 
     // Can't use PAL_TRY/EX_TRY here as they access the ClrDebugState which gets blown away as part of the
     // PROCESS_DETACH path. Must use special PAL_TRY_FOR_DLLMAIN, passing the reason were in the DllMain.
@@ -1861,6 +1863,17 @@ BOOL STDMETHODCALLTYPE EEDllMain( // TRUE on success, FALSE on error.
                 // Don't destroy threads here if we're in shutdown (shutdown will
                 // clean up for us instead).
 
+                // Store the TLS data; we'll need it later and we might NULL the slot in DetachThread.
+                // This would be problematic because we can't depend on the FLS still existing.
+                pParam->pTlsData = CheckThreadStateNoCreate(0
+#ifdef _DEBUG
+                 // When we get here, OS has destroyed FLS, so FlsGetValue returns NULL now.
+                 // We have validation code in CExecutionEngine::CheckThreadStateNoCreate to ensure that
+                 // our TLS and FLS data are consistent, but since FLS has been destroyed, we need
+                 // to silent the check there.  The extra arg for check build is for this purpose.
+                                                                                         , TRUE
+#endif
+                                                                                         );
                 Thread* thread = GetThread();
                 if (thread)
                 {
@@ -1894,7 +1907,7 @@ BOOL STDMETHODCALLTYPE EEDllMain( // TRUE on success, FALSE on error.
 
     if (dwReason == DLL_THREAD_DETACH || dwReason == DLL_PROCESS_DETACH)
     {
-        ThreadDetaching();
+        ThreadDetaching(param.pTlsData);
     }
     return TRUE;
 }
