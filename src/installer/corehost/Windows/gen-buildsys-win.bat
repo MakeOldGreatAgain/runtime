@@ -46,8 +46,8 @@ set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCLI_CMAKE_HOST_POLICY_VER=%__Host
 set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCORECLR_ARTIFACTS=%__CoreClrArtifacts% " "-DNATIVE_LIBS_ARTIFACTS=%__NativeLibsArtifacts%" 
 set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCMAKE_INSTALL_PREFIX=%__CMakeBinDir%" "-DCLI_CMAKE_RESOURCE_DIR=%__ResourcesDir%" "-DCLR_ENG_NATIVE_DIR=%__sourceDir%\..\..\..\eng\native"
 
-echo "%CMakePath%" %__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%
-"%CMakePath%" %__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%
+echo "%CMakePath%" -B%cd% -S%__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%
+"%CMakePath%" -B%cd% -S%__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%
 endlocal
 GOTO :DONE
 
